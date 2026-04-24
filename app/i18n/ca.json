@@ -1,0 +1,143 @@
+{
+  "nav": {
+    "home": "Inici",
+    "portfolio": "Gabinet d'obres",
+    "blog": "Blog",
+    "contact": "Contacte"
+  },
+  "hero": {
+    "subtitle": "Artista Multidisciplinari",
+    "description": "Intersecció entre art, tecnologia i ciència. De l'anàlisi dels materials a l'execució tècnica: programant sistemes i esculpint idees en fusta, tinta i paper.",
+    "cta_portfolio": "Veure Obres",
+    "cta_blog": "Llegir Blog"
+  },
+  "about": {
+    "title_prefix": "Sobre",
+    "title_highlight": "mi",
+    "description": "Soc Xavier Arbat, un polímata en curs amb vocació d'homo faber. Entenc la creativitat com un procés d'indagació sobre el funcionament de les coses, on la tecnologia, la matèria i l'anàlisi es donen la mà. El meu treball no cerca només la narrativa, sinó l'excel·lència en l'execució: des de l'arquitectura del codi fins a la resistència de la fusta o la delicadesa del llapis. Converteixo la curiositat tècnica en obres on cada material i cada decisió tenen una raó de ser.",
+    "cta": "Explorar obres",
+    "image_placeholder": "Foto / Visual"
+  },
+  "portfolio": {
+    "title_prefix": "Gabinet d'",
+    "title_highlight": "obres",
+    "description": "Exploracions transversals en la intersecció de l'art, la tecnologia i la praxi artesana.",
+    "sort_newest": "Més recents",
+    "sort_oldest": "Més antigues",
+    "filter_label": "Filtrar per etiquetes",
+    "projects": {
+      "angel": {
+        "title": "Àngel",
+        "description": "Estudi a tinta de figura alada."
+      },
+      "batman": {
+        "title": "Batman",
+        "description": "Interpretació del Cavaller Fosc."
+      },
+      "bebop": {
+        "title": "Bebop",
+        "description": "Homenatge a l'univers de Cowboy Bebop."
+      },
+      "berserk": {
+        "title": "Berserk",
+        "description": "Tribut al manga de Kentaro Miura."
+      },
+      "chaplin": {
+        "title": "Chaplin",
+        "description": "Retrat del geni del cinema mut."
+      },
+      "chucky": {
+        "title": "Chucky",
+        "description": "Il·lustració de la icona del terror."
+      },
+      "fear": {
+        "title": "Fear",
+        "description": "Exploració conceptual de la por."
+      },
+      "fubuki": {
+        "title": "Fubuki",
+        "description": "Il·lustració del personatge de One Punch Man."
+      },
+      "ink_cat": {
+        "title": "Ink Cat",
+        "description": "Gat realitzat amb tècnica de tinta."
+      },
+      "joker": {
+        "title": "Joker",
+        "description": "Retrat del Príncep Pallasso del Crim."
+      },
+      "linea_puntos": {
+        "title": "Línia de Punts",
+        "description": "Exercici de puntillisme i precisió."
+      },
+      "nicky": {
+        "title": "Nicky",
+        "description": "Retrat estilitzat a tècnica mixta."
+      },
+      "petit_princep": {
+        "title": "El Petit Príncep",
+        "description": "Il·lustració inspirada en l'obra de Saint-Exupéry."
+      },
+      "skull_ink": {
+        "title": "Skull Ink",
+        "description": "Sèrie de cranis realitzats a tinta."
+      },
+      "superman": {
+        "title": "Superman",
+        "description": "Interpretació de l'Home d'Acer."
+      },
+      "woman_portrait": {
+        "title": "Retrat de Dona",
+        "description": "Retrat realista a tècnica mixta."
+      }
+    }
+  },
+  "project_detail": {
+    "back": "Tornar al gabinet",
+    "gallery": "Galeria",
+    "tags_label": "Etiquetes",
+    "not_found": "Obra no trobada.",
+    "image_count": "imatges"
+  },
+  "blog": {
+    "terminal_prompt": "xavier@blog ~ $",
+    "terminal_command": "ls ./blog/posts/",
+    "back": "Tornar al blog",
+    "not_found": "Entrada no trobada."
+  },
+  "contact": {
+    "title_prefix": "Cont",
+    "title_highlight": "acte",
+    "description": "Tens un projecte en ment? Escriu-me pel canal que prefereixis.",
+    "labels": {
+      "email": "Email",
+      "whatsapp": "WhatsApp",
+      "phone": "Telèfon",
+      "github": "GitHub",
+      "linkedin": "LinkedIn",
+      "instagram": "Instagram",
+      "x": "X (Twitter)",
+      "youtube": "YouTube"
+    }
+  },
+  "tags": {
+    "illustration": "Il·lustració",
+    "ink": "Tinta",
+    "fan_art": "Fan Art",
+    "anime": "Anime",
+    "manga": "Manga",
+    "portrait": "Retrat",
+    "cinema": "Cinema",
+    "horror": "Terror",
+    "concept": "Concepte",
+    "animals": "Animals",
+    "technique": "Tècnica",
+    "pointillism": "Puntillisme",
+    "literature": "Literatura",
+    "skull": "Crani",
+    "realism": "Realisme"
+  },
+  "footer": {
+    "rights": "Tots els drets reservats."
+  }
+}

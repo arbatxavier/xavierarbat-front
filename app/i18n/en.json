@@ -1,0 +1,143 @@
+{
+  "nav": {
+    "home": "Home",
+    "portfolio": "Cabinet of Works",
+    "blog": "Blog",
+    "contact": "Contact"
+  },
+  "hero": {
+    "subtitle": "Multidisciplinary Artist",
+    "description": "Intersection of art, technology, and science. From material analysis to technical execution: programming systems and sculpting ideas in wood, ink, and paper.",
+    "cta_portfolio": "View Works",
+    "cta_blog": "Read Blog"
+  },
+  "about": {
+    "title_prefix": "About",
+    "title_highlight": "me",
+    "description": "I'm Xavier Arbat, a polymath in progress with a homo faber vocation. I understand creativity as a process of inquiry into how things work, where technology, materials and analysis go hand in hand. My work doesn't just seek narrative — it seeks excellence in execution: from code architecture to the resilience of wood or the delicacy of pencil. I turn technical curiosity into works where every material and every decision has a reason to be.",
+    "cta": "Explore works",
+    "image_placeholder": "Photo / Visual"
+  },
+  "portfolio": {
+    "title_prefix": "Cabinet of ",
+    "title_highlight": "Works",
+    "description": "Cross-disciplinary explorations at the intersection of art, technology and artisan praxis.",
+    "sort_newest": "Newest first",
+    "sort_oldest": "Oldest first",
+    "filter_label": "Filter by tags",
+    "projects": {
+      "angel": {
+        "title": "Angel",
+        "description": "Ink study of a winged figure."
+      },
+      "batman": {
+        "title": "Batman",
+        "description": "Interpretation of the Dark Knight."
+      },
+      "bebop": {
+        "title": "Bebop",
+        "description": "Tribute to the Cowboy Bebop universe."
+      },
+      "berserk": {
+        "title": "Berserk",
+        "description": "Tribute to Kentaro Miura's manga."
+      },
+      "chaplin": {
+        "title": "Chaplin",
+        "description": "Portrait of the silent film genius."
+      },
+      "chucky": {
+        "title": "Chucky",
+        "description": "Illustration of the horror icon."
+      },
+      "fear": {
+        "title": "Fear",
+        "description": "Conceptual exploration of fear."
+      },
+      "fubuki": {
+        "title": "Fubuki",
+        "description": "Illustration of the One Punch Man character."
+      },
+      "ink_cat": {
+        "title": "Ink Cat",
+        "description": "Cat rendered in ink technique."
+      },
+      "joker": {
+        "title": "Joker",
+        "description": "Portrait of the Clown Prince of Crime."
+      },
+      "linea_puntos": {
+        "title": "Dotted Line",
+        "description": "Pointillism and precision exercise."
+      },
+      "nicky": {
+        "title": "Nicky",
+        "description": "Stylized mixed-media portrait."
+      },
+      "petit_princep": {
+        "title": "The Little Prince",
+        "description": "Illustration inspired by Saint-Exupéry's work."
+      },
+      "skull_ink": {
+        "title": "Skull Ink",
+        "description": "Series of skulls rendered in ink."
+      },
+      "superman": {
+        "title": "Superman",
+        "description": "Interpretation of the Man of Steel."
+      },
+      "woman_portrait": {
+        "title": "Woman Portrait",
+        "description": "Realistic mixed-media portrait."
+      }
+    }
+  },
+  "project_detail": {
+    "back": "Back to cabinet",
+    "gallery": "Gallery",
+    "tags_label": "Tags",
+    "not_found": "Work not found.",
+    "image_count": "images"
+  },
+  "blog": {
+    "terminal_prompt": "xavier@blog ~ $",
+    "terminal_command": "ls ./blog/posts/",
+    "back": "Back to blog",
+    "not_found": "Post not found."
+  },
+  "contact": {
+    "title_prefix": "Cont",
+    "title_highlight": "act",
+    "description": "Have a project in mind? Reach out through your preferred channel.",
+    "labels": {
+      "email": "Email",
+      "whatsapp": "WhatsApp",
+      "phone": "Phone",
+      "github": "GitHub",
+      "linkedin": "LinkedIn",
+      "instagram": "Instagram",
+      "x": "X (Twitter)",
+      "youtube": "YouTube"
+    }
+  },
+  "tags": {
+    "illustration": "Illustration",
+    "ink": "Ink",
+    "fan_art": "Fan Art",
+    "anime": "Anime",
+    "manga": "Manga",
+    "portrait": "Portrait",
+    "cinema": "Cinema",
+    "horror": "Horror",
+    "concept": "Concept",
+    "animals": "Animals",
+    "technique": "Technique",
+    "pointillism": "Pointillism",
+    "literature": "Literature",
+    "skull": "Skull",
+    "realism": "Realism"
+  },
+  "footer": {
+    "rights": "All rights reserved."
+  }
+}
