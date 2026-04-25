@@ -1,28 +1,52 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Button from "./components/Button";
 import { useI18n } from "./i18n/provider";
 
+const backgroundImages = [
+  "/images/home/motherboard.jpg",
+];
+
 export default function Home() {
   const { t } = useI18n();
+  const [currentIdx, setCurrentIdx] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentIdx((prev) => (prev + 1) % backgroundImages.length);
+    }, 6000); // Change image every 6 seconds
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <>
-      {/* Hero — Video Background */}
+      {/* Hero — Image Background Carousel */}
       <section className="relative h-screen w-full overflow-hidden flex items-center justify-center">
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-        >
-          <source src="/video/hero.mp4" type="video/mp4" />
-        </video>
+        <div className="absolute inset-0 z-0">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentIdx}
+              initial={{ opacity: 0, scale: 1.1 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 2, ease: "easeInOut" }}
+              className="absolute inset-0"
+            >
+              <Image
+                src={backgroundImages[currentIdx]}
+                alt="Background"
+                fill
+                className="object-cover"
+                priority
+              />
+            </motion.div>
+          </AnimatePresence>
+        </div>
 
-        <div className="absolute inset-0 bg-background/70" />
+        <div className="absolute inset-0 bg-background/70 z-[1]" />
 
         <div className="relative z-10 text-center px-6 max-w-3xl">
           <motion.p
@@ -40,7 +64,12 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-5xl md:text-7xl font-bold leading-tight"
           >
-            Xavier <span className="text-accent">Arbat</span>
+            <span className="text-accent-cyan">X</span>
+            <span className="text-foreground">avier </span>
+            <span className="text-accent">Ar</span>
+            <span className="text-foreground">ba</span>
+            <span className="text-accent">t</span>
+            <span className="text-accent-cyan">.</span>
           </motion.h1>
 
           <motion.p
@@ -99,7 +128,7 @@ export default function Home() {
           </div>
           <div className="relative aspect-square bg-surface border border-surface-light rounded-2xl overflow-hidden">
             <Image
-              src="/images/me.jpg"
+              src="/images/home/me.jpg"
               alt="Xavier Arbat"
               fill
               className="object-cover"
