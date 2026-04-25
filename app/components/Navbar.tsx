@@ -10,7 +10,7 @@ const navLinks = [
   { href: "/", key: "home" as const },
   { href: "/portfolio", key: "portfolio" as const },
   { href: "/blog", key: "blog" as const },
-  { href: "/contacto", key: "contact" as const },
+  { href: "/contact", key: "contact" as const },
 ];
 
 export default function Navbar() {

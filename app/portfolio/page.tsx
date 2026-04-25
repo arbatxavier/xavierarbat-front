@@ -163,7 +163,7 @@ export default function PortfolioPage() {
         </div>
       </div>
 
-      {/* Masonry: columnas de arriba a abajo */}
+      {/* Masonry: columns from top to bottom */}
       <div className="columns-1 sm:columns-2 lg:columns-3 gap-5 space-y-5">
         {filteredProjects.map((project) => {
           const translated =

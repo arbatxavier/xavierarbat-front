@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { useI18n } from "../i18n/provider";
 import { getIcon, type ContactChannel } from "../data/contacts";
 
-export default function ContactoPage() {
+export default function ContactPage() {
   const { t } = useI18n();
   const [channels, setChannels] = useState<ContactChannel[]>([]);
   const [loading, setLoading] = useState(true);
