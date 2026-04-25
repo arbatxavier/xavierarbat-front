@@ -4,16 +4,41 @@ import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useI18n } from "../../i18n/provider";
-import { projects } from "../../data/projects";
+import type { Project } from "../../data/projects";
 
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { t } = useI18n();
+  const [project, setProject] = useState<Project | null>(null);
+  const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const project = projects.find((p) => p.id === id);
+  useEffect(() => {
+    async function fetchProject() {
+      try {
+        const res = await fetch(`/api/projects/${id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setProject(data);
+        }
+      } catch (err) {
+        console.error("Error fetching project:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchProject();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <section className="pt-28 pb-20 px-6 max-w-5xl mx-auto">
+        <div className="text-foreground/20 italic">Loading project...</div>
+      </section>
+    );
+  }
 
   if (!project) {
     return (

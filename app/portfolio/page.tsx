@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import Card from "../components/Card";
 import { useI18n } from "../i18n/provider";
-import { projects } from "../data/projects";
+import type { Project } from "../data/projects";
 import type { TagKey } from "../data/tags";
 
 type SortOrder = "desc" | "asc";
@@ -12,16 +12,32 @@ type TagState = "include" | "exclude";
 
 export default function PortfolioPage() {
   const { t } = useI18n();
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [allTags, setAllTags] = useState<TagKey[]>([]);
+  const [loading, setLoading] = useState(true);
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [tagFilters, setTagFilters] = useState<Map<TagKey, TagState>>(
     new Map()
   );
 
-  // Extract unique tags from all projects
-  const allTags = useMemo(() => {
-    const set = new Set<TagKey>();
-    projects.forEach((p) => p.tags.forEach((tag) => set.add(tag)));
-    return Array.from(set);
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [projRes, tagsRes] = await Promise.all([
+          fetch("/api/projects"),
+          fetch("/api/tags")
+        ]);
+        const projData = await projRes.json();
+        const tagsData = await tagsRes.json();
+        setProjects(projData);
+        setAllTags(tagsData);
+      } catch (err) {
+        console.error("Error fetching portfolio data:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
   }, []);
 
   // Cycle: neutral → include → exclude → neutral
@@ -46,7 +62,7 @@ export default function PortfolioPage() {
       const cmp = a.date.localeCompare(b.date);
       return sortOrder === "desc" ? -cmp : cmp;
     });
-  }, [sortOrder]);
+  }, [projects, sortOrder]);
 
   // Filter (AND logic for includes, OR logic for excludes)
   const filteredProjects = useMemo(() => {
@@ -80,6 +96,14 @@ export default function PortfolioPage() {
       return "border-red-500/50 text-red-500/50 line-through";
     return "border-surface-light text-foreground/40 hover:text-foreground/60";
   };
+
+  if (loading) {
+    return (
+      <section className="pt-28 pb-20 px-6 max-w-7xl mx-auto">
+        <div className="text-foreground/20 italic">Loading gallery...</div>
+      </section>
+    );
+  }
 
   return (
     <section className="pt-28 pb-20 px-6 max-w-7xl mx-auto">
@@ -139,7 +163,7 @@ export default function PortfolioPage() {
         </div>
       </div>
 
-      {/* Masonry: columnas de arriba a abajo */}
+      {/* Masonry: columns from top to bottom */}
       <div className="columns-1 sm:columns-2 lg:columns-3 gap-5 space-y-5">
         {filteredProjects.map((project) => {
           const translated =

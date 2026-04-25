@@ -1,14 +1,14 @@
 /**
- * Lista de tags disponibles para las obras del portfolio.
+ * List of available tags for portfolio works.
  *
- * Cada key es un string en inglés que se usa como:
- * - Identificador en projects.ts → tags: ["illustration", "ink"]
- * - Clave de traducción en los JSONs → t.tags["illustration"]
+ * Each key is an English string used as:
+ * - Identifier in projects.ts → tags: ["illustration", "ink"]
+ * - Translation key in JSONs → t.tags["illustration"]
  *
- * Para añadir un tag nuevo:
- * 1. Añádelo aquí.
- * 2. Añade la traducción en app/i18n/es.json, ca.json y en.json dentro de "tags.<key>".
- * 3. Úsalo en app/data/projects.ts.
+ * To add a new tag:
+ * 1. Add it here.
+ * 2. Add the translation in app/i18n/es.json, ca.json, and en.json under "tags.<key>".
+ * 3. Use it in app/data/projects.ts.
  */
 export const TAG_KEYS = [
   "illustration",

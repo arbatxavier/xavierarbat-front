@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Xavier Arbat — Portfolio",
-  description: "Portfolio personal de Xavier Arbat. Dirección, producción y visión creativa.",
+  description: "Xavier Arbat's personal portfolio. Art, development, and creative vision.",
 };
 
 export default function RootLayout({

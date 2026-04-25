@@ -34,7 +34,7 @@ interface I18nContextValue {
 
 const I18nContext = createContext<I18nContextValue | null>(null);
 
-/** Detecta el idioma preferido del navegador y lo mapea a nuestros locales */
+/** Detects the preferred browser language and maps it to our locales */
 function detectLocale(): Locale {
   if (typeof window === "undefined") return "en";
 
@@ -42,7 +42,7 @@ function detectLocale(): Locale {
   const stored = localStorage.getItem(STORAGE_KEY) as Locale | null;
   if (stored && LOCALES.includes(stored)) return stored;
 
-  // 2. Check navigator.languages (Chrome expone aquí las preferencias del usuario)
+  // 2. Check navigator.languages (Chrome exposes user preferences here)
   const browserLangs = navigator.languages ?? [navigator.language];
 
   for (const lang of browserLangs) {
@@ -72,7 +72,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     document.documentElement.lang = l;
   };
 
-  // Evita flash de idioma incorrecto durante SSR/hidratación
+  // Prevents incorrect language flash during SSR/hydration
   useEffect(() => {
     if (mounted) {
       document.documentElement.lang = locale;
