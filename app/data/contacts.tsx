@@ -1,4 +1,3 @@
-import { ReactNode } from "react";
 import {
   FiMail,
   FiPhone,
@@ -12,39 +11,33 @@ import {
 } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 
+export type IconName = 
+  | "FiMail" 
+  | "FiPhone" 
+  | "FaWhatsapp" 
+  | "FaLinkedinIn" 
+  | "FaInstagram" 
+  | "FaYoutube" 
+  | "FaGithub" 
+  | "FaXTwitter";
+
 export interface ContactChannel {
-  /** Clave para buscar la traducción en t.contact.labels[key] */
   key: string;
-  /** Texto a mostrar (email, número, @handle, etc.) */
   display: string;
-  /** URL de destino (mailto:, tel:, https://, etc.) */
   href: string;
-  /** Icono React del canal */
-  icon: ReactNode;
-  /** Clase de hover para el borde de la card */
+  iconName: IconName;
   hoverBorder: string;
-  /** Clase de hover para el color del icono */
   hoverIcon: string;
-  /** Clase de hover simple para el footer (ej: hover:text-green-500) */
   hoverSimple: string;
-  /** Mostrar en el footer (solo redes sociales) */
   showInFooter: boolean;
 }
 
-/**
- * Lista centralizada de canales de contacto.
- *
- * Para añadir un nuevo canal:
- * 1. Añade una entrada aquí.
- * 2. Añade la traducción del label en app/i18n/es.json, ca.json y en.json
- *    dentro de "contact.labels.<key>".
- */
 export const contactChannels: ContactChannel[] = [
   {
     key: "email",
     display: "xavixavi97@gmail.com",
     href: "mailto:xavixavi97@gmail.com",
-    icon: <FiMail />,
+    iconName: "FiMail",
     hoverBorder: "hover:border-accent",
     hoverIcon: "group-hover:text-accent",
     hoverSimple: "hover:text-accent",
@@ -54,7 +47,7 @@ export const contactChannels: ContactChannel[] = [
     key: "whatsapp",
     display: "+34 695 315 602",
     href: "https://wa.me/34695315602",
-    icon: <FaWhatsapp />,
+    iconName: "FaWhatsapp",
     hoverBorder: "hover:border-green-500",
     hoverIcon: "group-hover:text-green-500",
     hoverSimple: "hover:text-green-500",
@@ -64,7 +57,7 @@ export const contactChannels: ContactChannel[] = [
     key: "phone",
     display: "+34 695 315 602",
     href: "tel:+34695315602",
-    icon: <FiPhone />,
+    iconName: "FiPhone",
     hoverBorder: "hover:border-accent-cyan",
     hoverIcon: "group-hover:text-accent-cyan",
     hoverSimple: "hover:text-accent-cyan",
@@ -74,7 +67,7 @@ export const contactChannels: ContactChannel[] = [
     key: "github",
     display: "@arbatxavier",
     href: "https://github.com/arbatxavier",
-    icon: <FaGithub />,
+    iconName: "FaGithub",
     hoverBorder: "hover:border-foreground",
     hoverIcon: "group-hover:text-foreground",
     hoverSimple: "hover:text-foreground",
@@ -84,7 +77,7 @@ export const contactChannels: ContactChannel[] = [
     key: "linkedin",
     display: "Xavier Arbat Marquez",
     href: "https://www.linkedin.com/in/xavier-arbat-marquez",
-    icon: <FaLinkedinIn />,
+    iconName: "FaLinkedinIn",
     hoverBorder: "hover:border-blue-500",
     hoverIcon: "group-hover:text-blue-500",
     hoverSimple: "hover:text-blue-500",
@@ -94,7 +87,7 @@ export const contactChannels: ContactChannel[] = [
     key: "instagram",
     display: "@arbatxavier",
     href: "https://www.instagram.com/arbatxavier/",
-    icon: <FaInstagram />,
+    iconName: "FaInstagram",
     hoverBorder: "hover:border-pink-500",
     hoverIcon: "group-hover:text-pink-500",
     hoverSimple: "hover:text-pink-500",
@@ -104,7 +97,7 @@ export const contactChannels: ContactChannel[] = [
     key: "x",
     display: "@xavier_arbat",
     href: "https://x.com/xavier_arbat",
-    icon: <FaXTwitter />,
+    iconName: "FaXTwitter",
     hoverBorder: "hover:border-foreground",
     hoverIcon: "group-hover:text-foreground",
     hoverSimple: "hover:text-foreground",
@@ -114,10 +107,23 @@ export const contactChannels: ContactChannel[] = [
     key: "youtube",
     display: "@xavierarbat",
     href: "https://www.youtube.com/@xavierarbat",
-    icon: <FaYoutube />,
+    iconName: "FaYoutube",
     hoverBorder: "hover:border-red-500",
     hoverIcon: "group-hover:text-red-500",
     hoverSimple: "hover:text-red-500",
     showInFooter: true,
   },
 ];
+
+export function getIcon(name: IconName) {
+  switch (name) {
+    case "FiMail": return <FiMail />;
+    case "FiPhone": return <FiPhone />;
+    case "FaWhatsapp": return <FaWhatsapp />;
+    case "FaLinkedinIn": return <FaLinkedinIn />;
+    case "FaInstagram": return <FaInstagram />;
+    case "FaYoutube": return <FaYoutube />;
+    case "FaGithub": return <FaGithub />;
+    case "FaXTwitter": return <FaXTwitter />;
+  }
+}
