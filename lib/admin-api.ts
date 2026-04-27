@@ -110,6 +110,42 @@ async function adminFetch<T>(
 }
 
 // ---------------------------------------------------------------------------
+// Tags
+// ---------------------------------------------------------------------------
+
+export interface TagCreateReq {
+  key: string;
+  label?: string | null;
+}
+
+export interface TagUpdateReq {
+  label: string;
+}
+
+export const adminTags = {
+  list: (key: string) =>
+    adminFetch<{ key: string; label: string }[]>("/tags", key),
+
+  detail: (tagKey: string, apiKey: string) =>
+    adminFetch<{ key: string; label: string }>(`/tags/${tagKey}`, apiKey),
+
+  create: (data: TagCreateReq, key: string) =>
+    adminFetch<{ key: string; label: string }>("/tags", key, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  update: (tagKey: string, data: TagUpdateReq, key: string) =>
+    adminFetch<{ key: string; label: string }>(`/tags/${tagKey}`, key, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+
+  delete: (tagKey: string, key: string) =>
+    adminFetch<void>(`/tags/${tagKey}`, key, { method: "DELETE" }),
+};
+
+// ---------------------------------------------------------------------------
 // Projects
 // ---------------------------------------------------------------------------
 

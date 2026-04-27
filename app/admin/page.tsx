@@ -5,13 +5,15 @@ import ProjectsPanel from "./components/ProjectsPanel";
 import BlogsPanel from "./components/BlogsPanel";
 import ContactsPanel from "./components/ContactsPanel";
 import ImagesPanel from "./components/ImagesPanel";
+import TagsPanel from "./components/TagsPanel";
 
-type Tab = "projects" | "blogs" | "contacts" | "images";
+type Tab = "projects" | "blogs" | "contacts" | "tags" | "images";
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "projects", label: "Projects" },
   { key: "blogs", label: "Blogs" },
   { key: "contacts", label: "Contacts" },
+  { key: "tags", label: "Tags" },
   { key: "images", label: "Images" },
 ];
 
@@ -114,6 +116,7 @@ export default function AdminPage() {
       {tab === "projects" && <ProjectsPanel apiKey={apiKey} />}
       {tab === "blogs" && <BlogsPanel apiKey={apiKey} />}
       {tab === "contacts" && <ContactsPanel apiKey={apiKey} />}
+      {tab === "tags" && <TagsPanel apiKey={apiKey} />}
       {tab === "images" && <ImagesPanel apiKey={apiKey} />}
     </section>
   );
