@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useI18n } from "../../i18n/provider";
@@ -173,11 +174,16 @@ export default function BlogPostPage() {
                   ),
                   img: ({ src, alt }) => (
                     <span className="block my-6">
-                      <img
-                        src={src}
-                        alt={alt || ""}
-                        className="rounded-xl w-full object-cover border border-surface-light"
-                      />
+                      {src ? (
+                        <Image
+                          src={src}
+                          alt={alt || ""}
+                          width={1200}
+                          height={800}
+                          className="rounded-xl w-full h-auto border border-surface-light"
+                          priority={false}
+                        />
+                      ) : null}
                       {alt && (
                         <span className="block text-center text-foreground/30 text-xs mt-2 italic">
                           {alt}
