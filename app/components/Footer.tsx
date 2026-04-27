@@ -1,22 +1,26 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useI18n } from "../i18n/provider";
-import { getIcon, type ContactChannel } from "../data/contacts";
+import { useApiData } from "../hooks/useApiData";
+import {
+  contactChannels as localContacts,
+  getIcon,
+  type ContactChannel,
+} from "../data/contacts";
+import { fetchContacts } from "@/lib/api";
 
 export default function Footer() {
-  const { t } = useI18n();
-  const [links, setLinks] = useState<ContactChannel[]>([]);
+  const { t, locale } = useI18n();
 
-  useEffect(() => {
-    fetch("/api/contacts")
-      .then((res) => res.json())
-      .then((data) => {
-        setLinks(data.filter((ch: ContactChannel) => ch.showInFooter));
-      })
-      .catch(console.error);
-  }, []);
+  // Stale-while-revalidate: start with local contacts, refresh from API
+  const { data: allContacts } = useApiData<ContactChannel[]>({
+    key: `contacts-footer-${locale}`,
+    initialData: localContacts,
+    fetcher: () => fetchContacts(locale),
+  });
+
+  const links = allContacts.filter((ch) => ch.showInFooter);
 
   return (
     <footer className="border-t border-surface-light bg-background py-10 px-6">

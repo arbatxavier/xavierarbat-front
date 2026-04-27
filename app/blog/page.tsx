@@ -2,34 +2,20 @@
 
 import { motion } from "framer-motion";
 import { useI18n } from "../i18n/provider";
-import { useEffect, useState } from "react";
-
-interface BlogPost {
-  slug: string;
-  date: string;
-  title: string;
-  excerpt: string;
-}
+import { useApiData } from "../hooks/useApiData";
+import { fetchBlogs, type BlogPost } from "@/lib/api";
 
 export default function BlogPage() {
   const { t, locale } = useI18n();
-  const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchPosts() {
-      try {
-        const res = await fetch(`/api/blog?locale=${locale}`);
-        const data = await res.json();
-        setPosts(data);
-      } catch (err) {
-        console.error("Error fetching posts:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchPosts();
-  }, [locale]);
+  // No local blog data to pre-populate; start empty and fetch from API
+  const { data: posts, isRevalidating } = useApiData<BlogPost[]>({
+    key: `blogs-${locale}`,
+    initialData: [],
+    fetcher: () => fetchBlogs(locale),
+  });
+
+  const loading = posts.length === 0 && isRevalidating;
 
   return (
     <section className="pt-28 pb-20 px-6 max-w-4xl mx-auto font-mono">
@@ -64,7 +50,7 @@ export default function BlogPage() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.2 + i * 0.15 }}
                   className="group relative p-4 -m-4 rounded-xl hover:bg-white/5 transition-colors cursor-pointer"
-                  onClick={() => window.location.href = `/blog/${post.slug}`}
+                  onClick={() => (window.location.href = `/blog/${post.slug}`)}
                 >
                   <div className="flex items-baseline gap-3 mb-1">
                     <span className="text-foreground/30 text-xs shrink-0">
@@ -81,6 +67,13 @@ export default function BlogPage() {
               ))
             )}
 
+            {/* Empty state when API returns no posts */}
+            {!loading && posts.length === 0 && (
+              <div className="text-foreground/30 pl-[calc(10ch+0.75rem)]">
+                No posts found.
+              </div>
+            )}
+
             <div className="mt-6">
               <span className="text-accent-cyan">$ </span>
               <motion.span
@@ -95,4 +88,3 @@ export default function BlogPage() {
     </section>
   );
 }
-

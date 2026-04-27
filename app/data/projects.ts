@@ -11,6 +11,10 @@ export interface Project {
   tags: TagKey[];
   imageDisplay?: ImageDisplay;
   aspectRatio?: AspectRatio;
+  /** Pre-translated title from API (when available) */
+  title?: string;
+  /** Pre-translated short description from API (when available) */
+  shortDescription?: string;
 }
 
 export const projects: Project[] = [

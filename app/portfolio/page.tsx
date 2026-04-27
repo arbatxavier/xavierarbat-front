@@ -1,9 +1,13 @@
 "use client";
 
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import Card from "../components/Card";
 import { useI18n } from "../i18n/provider";
+import { useApiData } from "../hooks/useApiData";
+import { projects as localProjects } from "../data/projects";
+import { TAG_KEYS } from "../data/tags";
+import { fetchProjects } from "@/lib/api";
 import type { Project } from "../data/projects";
 import type { TagKey } from "../data/tags";
 
@@ -11,34 +15,27 @@ type SortOrder = "desc" | "asc";
 type TagState = "include" | "exclude";
 
 export default function PortfolioPage() {
-  const { t } = useI18n();
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [allTags, setAllTags] = useState<TagKey[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { t, locale } = useI18n();
+
+  // Stale-while-revalidate: start with local data, refresh from API
+  const { data: projects } = useApiData<Project[]>({
+    key: `projects-${locale}`,
+    initialData: localProjects,
+    fetcher: () => fetchProjects(locale),
+  });
+
+  // Extract unique tags from projects (API may have new tags)
+  const allTags = useMemo<TagKey[]>(() => {
+    const fromProjects = new Set(projects.flatMap((p) => p.tags));
+    // Merge with static TAG_KEYS so we never lose known tags
+    const merged = new Set([...TAG_KEYS, ...fromProjects]);
+    return [...merged] as TagKey[];
+  }, [projects]);
+
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [tagFilters, setTagFilters] = useState<Map<TagKey, TagState>>(
     new Map()
   );
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const [projRes, tagsRes] = await Promise.all([
-          fetch("/api/projects"),
-          fetch("/api/tags")
-        ]);
-        const projData = await projRes.json();
-        const tagsData = await tagsRes.json();
-        setProjects(projData);
-        setAllTags(tagsData);
-      } catch (err) {
-        console.error("Error fetching portfolio data:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchData();
-  }, []);
 
   // Cycle: neutral → include → exclude → neutral
   const toggleTag = useCallback((tag: TagKey) => {
@@ -76,9 +73,7 @@ export default function PortfolioPage() {
     if (included.length === 0 && excluded.length === 0) return sortedProjects;
 
     return sortedProjects.filter((project) => {
-      // Exclude: if project has ANY excluded tag → out
       if (excluded.some((tag) => project.tags.includes(tag))) return false;
-      // Include AND: project must have ALL included tags
       if (
         included.length > 0 &&
         !included.every((tag) => project.tags.includes(tag))
@@ -96,14 +91,6 @@ export default function PortfolioPage() {
       return "border-red-500/50 text-red-500/50 line-through";
     return "border-surface-light text-foreground/40 hover:text-foreground/60";
   };
-
-  if (loading) {
-    return (
-      <section className="pt-28 pb-20 px-6 max-w-7xl mx-auto">
-        <div className="text-foreground/20 italic">Loading gallery...</div>
-      </section>
-    );
-  }
 
   return (
     <section className="pt-28 pb-20 px-6 max-w-7xl mx-auto">
@@ -166,15 +153,21 @@ export default function PortfolioPage() {
       {/* Masonry: columns from top to bottom */}
       <div className="columns-1 sm:columns-2 lg:columns-3 gap-5 space-y-5">
         {filteredProjects.map((project) => {
+          // Prefer API-provided title/description; fall back to i18n
           const translated =
             t.portfolio.projects[
               project.id as keyof typeof t.portfolio.projects
             ];
+          const title =
+            project.title ?? translated?.title ?? project.id;
+          const description =
+            project.shortDescription ?? translated?.description;
+
           return (
             <div key={project.id} className="break-inside-avoid">
               <Card
-                title={translated?.title ?? project.id}
-                description={translated?.description}
+                title={title}
+                description={description}
                 date={project.date}
                 image={project.image}
                 imageDisplay={project.imageDisplay}
