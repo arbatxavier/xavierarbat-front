@@ -4,13 +4,15 @@ import { useState, useEffect } from "react";
 import ProjectsPanel from "./components/ProjectsPanel";
 import BlogsPanel from "./components/BlogsPanel";
 import ContactsPanel from "./components/ContactsPanel";
+import ImagesPanel from "./components/ImagesPanel";
 
-type Tab = "projects" | "blogs" | "contacts";
+type Tab = "projects" | "blogs" | "contacts" | "images";
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "projects", label: "Projects" },
   { key: "blogs", label: "Blogs" },
   { key: "contacts", label: "Contacts" },
+  { key: "images", label: "Images" },
 ];
 
 const SESSION_KEY = "admin_api_key";
@@ -112,6 +114,7 @@ export default function AdminPage() {
       {tab === "projects" && <ProjectsPanel apiKey={apiKey} />}
       {tab === "blogs" && <BlogsPanel apiKey={apiKey} />}
       {tab === "contacts" && <ContactsPanel apiKey={apiKey} />}
+      {tab === "images" && <ImagesPanel apiKey={apiKey} />}
     </section>
   );
 }
