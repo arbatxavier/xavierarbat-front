@@ -69,9 +69,18 @@ export function useApiData<T>({
   const [isRevalidating, setIsRevalidating] = useState(false);
 
   const fetcherRef = useRef(fetcher);
-  fetcherRef.current = fetcher;
   const dataRef = useRef(data);
-  dataRef.current = data;
+
+  // -----------------------------------------------------------------------
+  // SYNC: keep refs updated with latest props/state.
+  // -----------------------------------------------------------------------
+  useEffect(() => {
+    fetcherRef.current = fetcher;
+  }, [fetcher]);
+
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
 
   // -----------------------------------------------------------------------
   // BEFORE paint: restore cached data from localStorage.

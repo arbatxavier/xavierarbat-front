@@ -1,18 +1,15 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useCallback } from "react";
 import { motion } from "framer-motion";
 import Card from "../components/Card";
 import { useI18n } from "../i18n/provider";
 import { useApiData } from "../hooks/useApiData";
+import { usePortfolioFilters } from "./hooks/usePortfolioFilters";
 import { projects as localProjects } from "../data/projects";
-import { TAG_KEYS } from "../data/tags";
 import { fetchProjects, fetchTags } from "@/lib/api";
 import type { Project } from "../data/projects";
 import type { TagKey } from "../data/tags";
-
-type SortOrder = "desc" | "asc";
-type TagState = "include" | "exclude";
 
 export default function PortfolioPage() {
   const { t, locale } = useI18n();
@@ -31,71 +28,21 @@ export default function PortfolioPage() {
     fetcher: () => fetchTags(locale),
   });
 
+  const {
+    sortOrder,
+    setSortOrder,
+    tagFilters,
+    allTags,
+    toggleTag,
+    filteredProjects,
+  } = usePortfolioFilters(projects);
+
   /** Resolve a tag key to its display label */
   const tagLabel = useCallback(
     (tag: string) =>
       apiTagLabels[tag] || t.tags[tag as keyof typeof t.tags] || tag,
-    [apiTagLabels, t.tags],
+    [apiTagLabels, t],
   );
-
-  // Extract unique tags from projects (API may have new tags)
-  const allTags = useMemo<TagKey[]>(() => {
-    const fromProjects = new Set(projects.flatMap((p) => p.tags));
-    // Merge with static TAG_KEYS so we never lose known tags
-    const merged = new Set([...TAG_KEYS, ...fromProjects]);
-    return [...merged] as TagKey[];
-  }, [projects]);
-
-  const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
-  const [tagFilters, setTagFilters] = useState<Map<TagKey, TagState>>(
-    new Map()
-  );
-
-  // Cycle: neutral → include → exclude → neutral
-  const toggleTag = useCallback((tag: TagKey) => {
-    setTagFilters((prev) => {
-      const next = new Map(prev);
-      const current = next.get(tag);
-      if (!current) {
-        next.set(tag, "include");
-      } else if (current === "include") {
-        next.set(tag, "exclude");
-      } else {
-        next.delete(tag);
-      }
-      return next;
-    });
-  }, []);
-
-  // Sort
-  const sortedProjects = useMemo(() => {
-    return [...projects].sort((a, b) => {
-      const cmp = a.date.localeCompare(b.date);
-      return sortOrder === "desc" ? -cmp : cmp;
-    });
-  }, [projects, sortOrder]);
-
-  // Filter (AND logic for includes, OR logic for excludes)
-  const filteredProjects = useMemo(() => {
-    const included = [...tagFilters.entries()]
-      .filter(([, v]) => v === "include")
-      .map(([k]) => k);
-    const excluded = [...tagFilters.entries()]
-      .filter(([, v]) => v === "exclude")
-      .map(([k]) => k);
-
-    if (included.length === 0 && excluded.length === 0) return sortedProjects;
-
-    return sortedProjects.filter((project) => {
-      if (excluded.some((tag) => project.tags.includes(tag))) return false;
-      if (
-        included.length > 0 &&
-        !included.every((tag) => project.tags.includes(tag))
-      )
-        return false;
-      return true;
-    });
-  }, [sortedProjects, tagFilters]);
 
   const tagStateClass = (tag: TagKey) => {
     const state = tagFilters.get(tag);

@@ -39,7 +39,7 @@ export default function ProjectDetailPage() {
   const tagLabel = useCallback(
     (tag: string) =>
       apiTagLabels[tag] || t.tags[tag as keyof typeof t.tags] || tag,
-    [apiTagLabels, t.tags],
+    [apiTagLabels, t],
   );
 
   if (!project) {
