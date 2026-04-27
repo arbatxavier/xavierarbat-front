@@ -1,16 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { adminProjects, type ProjectCreateReq, type I18nMap } from "@/lib/admin-api";
+import { adminProjects, adminTags, type ProjectCreateReq, type I18nMap } from "@/lib/admin-api";
 import { I18nInput, I18nTextarea } from "./I18nFields";
 
 const EMPTY_I18N: I18nMap = { en: "", es: "", ca: "" };
-
-const TAG_OPTIONS = [
-  "ILLUSTRATION", "INK", "FAN_ART", "ANIME", "MANGA", "PORTRAIT",
-  "CINEMA", "HORROR", "CONCEPT", "ANIMALS", "TECHNIQUE", "POINTILLISM",
-  "LITERATURE", "SKULL", "REALISM",
-];
 
 const DISPLAY_OPTIONS = ["COVER", "CONTAIN", "TOP"];
 const RATIO_OPTIONS = ["PORTRAIT", "SQUARE", "FOURTHIRDS"];
@@ -28,6 +22,7 @@ export default function ProjectsPanel({ apiKey }: { apiKey: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [editing, setEditing] = useState<string | null>(null); // slug or "__new__"
+  const [availableTags, setAvailableTags] = useState<{ key: string; label: string }[]>([]);
 
   // Form state
   const [slug, setSlug] = useState("");
@@ -46,8 +41,12 @@ export default function ProjectsPanel({ apiKey }: { apiKey: string }) {
     setLoading(true);
     setError("");
     try {
-      const data = (await adminProjects.list(apiKey)) as ProjectItem[];
+      const [data, tagData] = await Promise.all([
+        adminProjects.list(apiKey) as Promise<ProjectItem[]>,
+        adminTags.list(apiKey),
+      ]);
       setItems(data);
+      setAvailableTags(tagData);
     } catch (e) {
       setError(String(e));
     } finally {
@@ -197,14 +196,14 @@ export default function ProjectsPanel({ apiKey }: { apiKey: string }) {
           <div>
             <label className="block text-xs text-foreground/50 uppercase tracking-widest mb-2">Tags</label>
             <div className="flex flex-wrap gap-2">
-              {TAG_OPTIONS.map((tag) => (
-                <button key={tag} type="button" onClick={() => toggleTag(tag)}
+              {availableTags.map((t) => (
+                <button key={t.key} type="button" onClick={() => toggleTag(t.key)}
                   className={`text-xs px-3 py-1.5 rounded-lg border cursor-pointer transition-colors ${
-                    tags.includes(tag)
+                    tags.includes(t.key)
                       ? "border-accent-cyan text-accent-cyan bg-accent-cyan/10"
                       : "border-surface-light text-foreground/40 hover:text-foreground/60"
                   }`}>
-                  {tag}
+                  {t.label}
                 </button>
               ))}
             </div>

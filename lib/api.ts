@@ -268,6 +268,27 @@ export async function fetchContacts(
 
 // -- Blogs ------------------------------------------------------------------
 
+// -- Tags -------------------------------------------------------------------
+
+export interface ApiTag {
+  key: string;
+  label: string;
+}
+
+/** Returns a map of lowercase tag key → translated label */
+export async function fetchTags(
+  locale: string,
+): Promise<Record<string, string>> {
+  const dtos = await apiFetch<ApiTag[]>("/tags", locale);
+  const map: Record<string, string> = {};
+  for (const dto of dtos) {
+    map[dto.key.toLowerCase()] = dto.label;
+  }
+  return map;
+}
+
+// -- Blogs ------------------------------------------------------------------
+
 export interface BlogPost {
   slug: string;
   date: string;

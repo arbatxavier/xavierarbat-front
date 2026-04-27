@@ -7,7 +7,7 @@ import { useI18n } from "../i18n/provider";
 import { useApiData } from "../hooks/useApiData";
 import { projects as localProjects } from "../data/projects";
 import { TAG_KEYS } from "../data/tags";
-import { fetchProjects } from "@/lib/api";
+import { fetchProjects, fetchTags } from "@/lib/api";
 import type { Project } from "../data/projects";
 import type { TagKey } from "../data/tags";
 
@@ -23,6 +23,20 @@ export default function PortfolioPage() {
     initialData: localProjects,
     fetcher: () => fetchProjects(locale),
   });
+
+  // Tag labels from API (key→label map); fallback to i18n translations
+  const { data: apiTagLabels } = useApiData<Record<string, string>>({
+    key: `tags-${locale}`,
+    initialData: {},
+    fetcher: () => fetchTags(locale),
+  });
+
+  /** Resolve a tag key to its display label */
+  const tagLabel = useCallback(
+    (tag: string) =>
+      apiTagLabels[tag] || t.tags[tag as keyof typeof t.tags] || tag,
+    [apiTagLabels, t.tags],
+  );
 
   // Extract unique tags from projects (API may have new tags)
   const allTags = useMemo<TagKey[]>(() => {
@@ -144,7 +158,7 @@ export default function PortfolioPage() {
               onClick={() => toggleTag(tag)}
               className={`text-xs px-3 py-1.5 rounded-lg border transition-all duration-200 cursor-pointer ${tagStateClass(tag)}`}
             >
-              {t.tags[tag as keyof typeof t.tags] ?? tag}
+              {tagLabel(tag)}
             </button>
           ))}
         </div>
@@ -173,7 +187,7 @@ export default function PortfolioPage() {
                 imageDisplay={project.imageDisplay}
                 aspectRatio={project.aspectRatio}
                 tags={project.tags.map(
-                  (tag) => t.tags[tag as keyof typeof t.tags] ?? tag
+                  (tag) => tagLabel(tag)
                 )}
                 href={`/portfolio/${project.id}`}
               />
