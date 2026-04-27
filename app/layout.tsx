@@ -16,8 +16,30 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Xavier Arbat — Portfolio",
-  description: "Xavier Arbat's personal portfolio. Art, development, and creative vision.",
+  title: 'Xavier Arbat | Fullstack Developer & Part-time Artist',
+  description: 'Explora mi portfolio: obras artísticas, blog de reflexiones y proyectos de programación con frontend y backend públicos en GitHub.',
+  openGraph: {
+    title: 'Xavier Arbat | Tech & Art',
+    description: 'Arquitectura de software, código abierto y galería de arte personal.',
+    url: 'https://xavierarbat.com',
+    siteName: 'Xavier Arbat',
+    locale: 'es_ES',
+    type: 'website',
+    images: [
+      {
+        url: 'https://api.xavierarbat.com/uploads/projects/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Previsualización del Portfolio de Xavier Arbat',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Xavier Arbat | Fullstack Developer & Artist',
+    description: 'Desarrollo de software y obras de arte.',
+    images: ['https://api.xavierarbat.com/uploads/projects/og-image.png'],
+  },
 };
 
 export default function RootLayout({
