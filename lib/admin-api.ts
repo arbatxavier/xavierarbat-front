@@ -166,6 +166,51 @@ export const adminContacts = {
 // Blogs
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Images
+// ---------------------------------------------------------------------------
+
+const API_ROOT = "https://api.xavierarbat.com";
+
+export const adminImages = {
+  /** Returns an array of URL paths like ["/uploads/projects/foo.jpg", ...] */
+  list: (folder: string, key: string) =>
+    adminFetch<string[]>(`/images/${folder}`, key),
+
+  /** Upload a file via multipart/form-data. Returns { url: "/uploads/..." } */
+  upload: async (folder: string, file: File, key: string): Promise<string> => {
+    const form = new FormData();
+    form.append("file", file);
+
+    const res = await fetch(`${API}/images/${folder}`, {
+      method: "POST",
+      headers: { "X-API-Key": key },
+      body: form,
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`${res.status}: ${text}`);
+    }
+
+    const data: Record<string, string> = await res.json();
+    return data.url ?? data.path ?? Object.values(data)[0] ?? "";
+  },
+
+  delete: (folder: string, filename: string, key: string) =>
+    adminFetch<void>(`/images/${folder}/${filename}`, key, {
+      method: "DELETE",
+    }),
+
+  /** Resolve a path like "/uploads/projects/foo.jpg" to a full URL */
+  publicUrl: (path: string) =>
+    path.startsWith("http") ? path : `${API_ROOT}${path}`,
+};
+
+// ---------------------------------------------------------------------------
+// Blogs
+// ---------------------------------------------------------------------------
+
 export const adminBlogs = {
   list: (key: string) =>
     adminFetch<unknown[]>("/blogs", key),

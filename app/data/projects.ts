@@ -110,7 +110,7 @@ export const projects: Project[] = [
   },
   {
     id: "linea_puntos",
-    image: "/images/projects/linea_puntos_00.png",
+    image: "/images/projects/linea_puntos_00_s.jpg",
     date: "2019-12-12",
     altImages: [],
     tags: ["technique", "pointillism"],
@@ -119,7 +119,7 @@ export const projects: Project[] = [
   },
   {
     id: "nicky",
-    image: "/images/projects/nicky_00.png",
+    image: "/images/projects/nicky_00_s.jpg",
     date: "2023-09-20",
     altImages: ["/images/projects/nicky_01.jpg", "/images/projects/nicky_02.jpeg"],
     tags: ["portrait", "illustration"],
