@@ -3,46 +3,23 @@
 import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useI18n } from "../../i18n/provider";
-
-interface BlogPost {
-  slug: string;
-  date: string;
-  title: string;
-  excerpt: string;
-  content: string;
-}
+import { useApiData } from "../../hooks/useApiData";
+import { fetchBlogDetail, type BlogPostDetail } from "@/lib/api";
 
 export default function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
   const { t, locale } = useI18n();
-  const [post, setPost] = useState<BlogPost | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
 
-  useEffect(() => {
-    async function fetchPost() {
-      setLoading(true);
-      setNotFound(false);
-      try {
-        const res = await fetch(`/api/blog?locale=${locale}&slug=${slug}`);
-        if (!res.ok) {
-          setNotFound(true);
-        } else {
-          const data = await res.json();
-          setPost(data);
-        }
-      } catch {
-        setNotFound(true);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchPost();
-  }, [locale, slug]);
+  const { data: post, isRevalidating } = useApiData<BlogPostDetail | null>({
+    key: `blog-${slug}-${locale}`,
+    initialData: null,
+    fetcher: () => fetchBlogDetail(slug, locale),
+  });
+
+  const loading = !post && isRevalidating;
 
   if (loading) {
     return (
@@ -52,7 +29,7 @@ export default function BlogPostPage() {
     );
   }
 
-  if (notFound || !post) {
+  if (!post) {
     return (
       <section className="pt-28 pb-20 px-6 max-w-4xl mx-auto text-center">
         <p className="text-foreground/50 text-lg">{t.blog.not_found}</p>
@@ -129,13 +106,19 @@ export default function BlogPostPage() {
                     <p className="text-foreground/70 leading-7 mb-4">{children}</p>
                   ),
                   h1: ({ children }) => (
-                    <h1 className="text-2xl font-bold text-foreground mt-8 mb-3">{children}</h1>
+                    <h1 className="text-2xl font-bold text-foreground mt-8 mb-3">
+                      {children}
+                    </h1>
                   ),
                   h2: ({ children }) => (
-                    <h2 className="text-xl font-bold text-foreground mt-6 mb-2">{children}</h2>
+                    <h2 className="text-xl font-bold text-foreground mt-6 mb-2">
+                      {children}
+                    </h2>
                   ),
                   h3: ({ children }) => (
-                    <h3 className="text-lg font-semibold text-foreground mt-5 mb-2">{children}</h3>
+                    <h3 className="text-lg font-semibold text-foreground mt-5 mb-2">
+                      {children}
+                    </h3>
                   ),
                   a: ({ href, children }) => (
                     <a
@@ -202,9 +185,7 @@ export default function BlogPostPage() {
                       )}
                     </span>
                   ),
-                  hr: () => (
-                    <hr className="border-surface-light my-6" />
-                  ),
+                  hr: () => <hr className="border-surface-light my-6" />,
                 }}
               >
                 {post.content}

@@ -1,30 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useI18n } from "../i18n/provider";
-import { getIcon, type ContactChannel } from "../data/contacts";
+import { useApiData } from "../hooks/useApiData";
+import {
+  contactChannels as localContacts,
+  getIcon,
+  type ContactChannel,
+} from "../data/contacts";
+import { fetchContacts } from "@/lib/api";
 
 export default function ContactPage() {
-  const { t } = useI18n();
-  const [channels, setChannels] = useState<ContactChannel[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { t, locale } = useI18n();
 
-  useEffect(() => {
-    fetch("/api/contacts")
-      .then((res) => res.json())
-      .then((data) => setChannels(data))
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
-
-  if (loading) {
-    return (
-      <section className="pt-28 pb-20 px-6 max-w-7xl mx-auto">
-        <div className="text-foreground/20 italic">Loading channels...</div>
-      </section>
-    );
-  }
+  // Stale-while-revalidate: start with local contacts, refresh from API
+  const { data: channels } = useApiData<ContactChannel[]>({
+    key: `contacts-${locale}`,
+    initialData: localContacts,
+    fetcher: () => fetchContacts(locale),
+  });
 
   return (
     <section className="pt-28 pb-20 px-6 max-w-7xl mx-auto">
@@ -54,7 +48,9 @@ export default function ContactPage() {
             transition={{ delay: i * 0.1 }}
             className={`group p-6 bg-surface border border-surface-light rounded-2xl transition-all duration-300 ${channel.hoverBorder}`}
           >
-            <div className={`text-2xl mb-4 transition-colors duration-300 ${channel.hoverIcon}`}>
+            <div
+              className={`text-2xl mb-4 transition-colors duration-300 ${channel.hoverIcon}`}
+            >
               {getIcon(channel.iconName)}
             </div>
             <p className="text-xs text-foreground/30 uppercase tracking-widest mb-1">

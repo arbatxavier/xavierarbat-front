@@ -4,41 +4,31 @@ import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useI18n } from "../../i18n/provider";
+import { useApiData } from "../../hooks/useApiData";
+import { projects as localProjects } from "../../data/projects";
+import { fetchProjectDetail } from "@/lib/api";
 import type { Project } from "../../data/projects";
+
+type ProjectWithContent = Project & {
+  description?: string;
+  content?: string;
+};
 
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { t } = useI18n();
-  const [project, setProject] = useState<Project | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { t, locale } = useI18n();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchProject() {
-      try {
-        const res = await fetch(`/api/projects/${id}`);
-        if (res.ok) {
-          const data = await res.json();
-          setProject(data);
-        }
-      } catch (err) {
-        console.error("Error fetching project:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchProject();
-  }, [id]);
+  // Find local project as initial data (match by id)
+  const localProject = localProjects.find((p) => p.id === id) ?? null;
 
-  if (loading) {
-    return (
-      <section className="pt-28 pb-20 px-6 max-w-5xl mx-auto">
-        <div className="text-foreground/20 italic">Loading project...</div>
-      </section>
-    );
-  }
+  const { data: project } = useApiData<ProjectWithContent | null>({
+    key: `project-${id}-${locale}`,
+    initialData: localProject,
+    fetcher: () => fetchProjectDetail(id, locale),
+  });
 
   if (!project) {
     return (
@@ -54,8 +44,14 @@ export default function ProjectDetailPage() {
     );
   }
 
+  // Prefer API-provided title/description; fall back to i18n
   const translated =
     t.portfolio.projects[project.id as keyof typeof t.portfolio.projects];
+  const title = project.title ?? translated?.title ?? project.id;
+  const description =
+    project.description ??
+    project.shortDescription ??
+    translated?.description;
 
   const allImages = [project.image, ...project.altImages];
 
@@ -83,13 +79,11 @@ export default function ProjectDetailPage() {
           transition={{ duration: 0.5 }}
           className="mb-10"
         >
-          <h1 className="text-4xl md:text-5xl font-bold mb-3">
-            {translated?.title ?? project.id}
-          </h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-3">{title}</h1>
           <p className="text-sm text-foreground/30 mb-4">{project.date}</p>
-          {translated?.description && (
+          {description && (
             <p className="text-foreground/50 text-lg max-w-2xl leading-relaxed">
-              {translated.description}
+              {description}
             </p>
           )}
 
@@ -112,16 +106,18 @@ export default function ProjectDetailPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
           className={`relative w-full bg-surface border border-surface-light rounded-2xl overflow-hidden mb-8 cursor-pointer ${
-            project.aspectRatio === "portrait" ? "aspect-[3/4] max-w-2xl mx-auto" : "aspect-[4/3]"
+            project.aspectRatio === "portrait"
+              ? "aspect-[3/4] max-w-2xl mx-auto"
+              : "aspect-[4/3]"
           }`}
           onClick={() => setSelectedImage(project.image)}
         >
           <Image
             src={project.image}
-            alt={translated?.title ?? project.id}
+            alt={title}
             fill
             className="object-contain"
-            priority
+            preload
           />
         </motion.div>
 
@@ -150,7 +146,7 @@ export default function ProjectDetailPage() {
                 >
                   <Image
                     src={img}
-                    alt={`${translated?.title ?? project.id} - ${i + 1}`}
+                    alt={`${title} - ${i + 1}`}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />
@@ -158,6 +154,18 @@ export default function ProjectDetailPage() {
                 </motion.div>
               ))}
             </div>
+          </motion.div>
+        )}
+
+        {/* Content (from API) */}
+        {project.content && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="mt-12 max-w-3xl mx-auto text-foreground/70 leading-relaxed whitespace-pre-line"
+          >
+            {project.content}
           </motion.div>
         )}
       </section>
@@ -183,7 +191,7 @@ export default function ProjectDetailPage() {
             >
               <Image
                 src={selectedImage}
-                alt={translated?.title ?? project.id}
+                alt={title}
                 fill
                 className="object-contain"
               />
