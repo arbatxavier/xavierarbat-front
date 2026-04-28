@@ -176,7 +176,7 @@ export default function BlogPostPage() {
                     <span className="block my-6">
                       {src ? (
                         <Image
-                          src={src}
+                          src={src as string}
                           alt={alt || ""}
                           width={1200}
                           height={800}
