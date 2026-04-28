@@ -1,12 +1,19 @@
 import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV === "development";
-const BACKEND_URL = isDev ? "http://localhost:8080" : "https://api.xavierarbat.com";
+
+// Prioritize Env Var (Coolify/Production), then Local Dev, then Production Fallback
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_ROOT || (isDev ? "http://localhost:8080" : "https://api.xavierarbat.com");
+
+// Extract protocol, hostname and port for remotePatterns
+const url = new URL(BACKEND_URL);
+const protocol = url.protocol.replace(":", "") as "http" | "https";
+const hostname = url.hostname;
+const port = url.port;
 
 const nextConfig: NextConfig = {
   images: {
     // In dev, skip server-side image optimization to avoid SSL cert issues
-    // with the rewrite proxy to api.xavierarbat.com
     unoptimized: isDev,
     remotePatterns: [
       {
@@ -15,16 +22,21 @@ const nextConfig: NextConfig = {
         pathname: "/images/**",
       },
       {
-        protocol: isDev ? "http" : "https",
-        hostname: isDev ? "localhost" : "api.xavierarbat.com",
-        port: isDev ? "8080" : "",
+        protocol: protocol,
+        hostname: hostname,
+        port: port,
+        pathname: "/**",
+      },
+      // Keep production fallback pattern just in case
+      {
+        protocol: "https",
+        hostname: "api.xavierarbat.com",
         pathname: "/**",
       },
     ],
   },
   async rewrites() {
     // In production, proxy transparently (same origin, no CORS, clean URLs)
-    // In dev, skip — redirects handle it instead to avoid Node.js SSL issues
     return isDev
       ? []
       : [

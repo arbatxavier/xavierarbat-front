@@ -129,7 +129,7 @@ export default function ProjectDetailPage() {
             alt={title}
             fill
             className="object-contain"
-            preload
+            priority
           />
         </motion.div>
 
