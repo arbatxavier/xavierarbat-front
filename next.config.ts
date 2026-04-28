@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV === "development";
+const BACKEND_URL = isDev ? "http://localhost:8080" : "https://api.xavierarbat.com";
 
 const nextConfig: NextConfig = {
   images: {
@@ -14,8 +15,9 @@ const nextConfig: NextConfig = {
         pathname: "/images/**",
       },
       {
-        protocol: "https",
-        hostname: "api.xavierarbat.com",
+        protocol: isDev ? "http" : "https",
+        hostname: isDev ? "localhost" : "api.xavierarbat.com",
+        port: isDev ? "8080" : "",
         pathname: "/**",
       },
     ],
@@ -28,7 +30,7 @@ const nextConfig: NextConfig = {
       : [
           {
             source: "/images/:path*",
-            destination: "https://api.xavierarbat.com/uploads/:path*",
+            destination: `${BACKEND_URL}/uploads/:path*`,
           },
         ];
   },
@@ -39,7 +41,7 @@ const nextConfig: NextConfig = {
       ? [
           {
             source: "/images/:path*",
-            destination: "https://api.xavierarbat.com/uploads/:path*",
+            destination: `${BACKEND_URL}/uploads/:path*`,
             permanent: false,
           },
         ]

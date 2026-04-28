@@ -17,103 +17,117 @@ interface ProjectItem {
   tags: string[];
 }
 
-export default function ProjectsPanel({ apiKey }: { apiKey: string }) {
-  const [items, setItems] = useState<ProjectItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [editing, setEditing] = useState<string | null>(null); // slug or "__new__"
+export default function ProjectsPanel({ token }: { token: string }) {
+  const [projects, setProjects] = useState<ProjectItem[]>([]);
   const [availableTags, setAvailableTags] = useState<{ key: string; label: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   // Form state
   const [slug, setSlug] = useState("");
   const [date, setDate] = useState("");
   const [image, setImage] = useState("");
-  const [title, setTitle] = useState<I18nMap>({ ...EMPTY_I18N });
-  const [description, setDescription] = useState<I18nMap>({ ...EMPTY_I18N });
-  const [content, setContent] = useState<I18nMap>({ ...EMPTY_I18N });
-  const [tags, setTags] = useState<string[]>([]);
+  const [title, setTitle] = useState<I18nMap>(EMPTY_I18N);
+  const [description, setDescription] = useState<I18nMap>(EMPTY_I18N);
+  const [content, setContent] = useState<I18nMap>(EMPTY_I18N);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [imageDisplay, setImageDisplay] = useState("COVER");
-  const [aspectRatio, setAspectRatio] = useState("PORTRAIT");
-  const [altImages, setAltImages] = useState("");
-  const [saving, setSaving] = useState(false);
+  const [aspectRatio, setAspectRatio] = useState("FOURTHIRDS");
+  const [altImagesText, setAltImagesText] = useState("");
 
-  const refresh = useCallback(async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const [data, tagData] = await Promise.all([
-        adminProjects.list(apiKey) as Promise<ProjectItem[]>,
-        adminTags.list(apiKey),
+      const [p, t] = await Promise.all([
+        adminProjects.list(token) as Promise<ProjectItem[]>,
+        adminTags.list(token),
       ]);
-      setItems(data);
-      setAvailableTags(tagData);
-    } catch (e) {
-      setError(String(e));
+      setProjects(p);
+      setAvailableTags(t);
+    } catch (err) {
+      setError(String(err));
+      console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [apiKey]);
+  }, [token]);
 
-  useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const resetForm = () => {
-    setSlug(""); setDate(""); setImage("");
-    setTitle({ ...EMPTY_I18N }); setDescription({ ...EMPTY_I18N }); setContent({ ...EMPTY_I18N });
-    setTags([]); setImageDisplay("COVER"); setAspectRatio("PORTRAIT"); setAltImages("");
-    setEditing(null);
+    setSlug("");
+    setDate("");
+    setImage("");
+    setTitle(EMPTY_I18N);
+    setDescription(EMPTY_I18N);
+    setContent(EMPTY_I18N);
+    setSelectedTags([]);
+    setImageDisplay("COVER");
+    setAspectRatio("FOURTHIRDS");
+    setAltImagesText("");
+    setError("");
   };
 
-  const startCreate = () => {
-    resetForm();
-    setDate(new Date().toISOString().split("T")[0]);
-    setEditing("__new__");
-  };
-
-  const startEdit = async (s: string) => {
+  const handleEdit = async (s: string) => {
+    setEditing(s);
     setError("");
     try {
-      // Fetch detail for each locale to populate the i18n fields
       const [en, es, ca] = await Promise.all([
-        adminProjects.detail(s, apiKey, "en") as Promise<Record<string, string>>,
-        adminProjects.detail(s, apiKey, "es") as Promise<Record<string, string>>,
-        adminProjects.detail(s, apiKey, "ca") as Promise<Record<string, string>>,
+        adminProjects.detail(s, token, "en") as Promise<any>,
+        adminProjects.detail(s, token, "es") as Promise<any>,
+        adminProjects.detail(s, token, "ca") as Promise<any>,
       ]);
+
       setSlug(en.slug);
       setDate(en.date);
       setImage(en.image);
       setTitle({ en: en.title, es: es.title, ca: ca.title });
-      setDescription({ en: en.description ?? "", es: es.description ?? "", ca: ca.description ?? "" });
-      setContent({ en: en.content ?? "", es: es.content ?? "", ca: ca.content ?? "" });
-      setTags((en.tags as unknown as string[]) ?? []);
-      setImageDisplay(en.imageDisplay ?? "COVER");
-      setAspectRatio(en.aspectRatio ?? "PORTRAIT");
-      setAltImages(((en.altImages as unknown as string[]) ?? []).join("\n"));
-      setEditing(s);
-    } catch (e) {
-      setError(String(e));
+      setDescription({ en: en.description, es: es.description, ca: ca.description });
+      setContent({ en: en.content, es: es.content, ca: ca.content });
+      setSelectedTags(en.tags || []);
+      setImageDisplay(en.imageDisplay || "COVER");
+      setAspectRatio(en.aspectRatio || "FOURTHIRDS");
+      setAltImagesText((en.altImages || []).join("\n"));
+    } catch (err) {
+      setError(String(err));
+      console.error(err);
     }
   };
 
   const handleSave = async () => {
-    setSaving(true); setError("");
+    setSaving(true);
+    setError("");
+    const alts = altImagesText.split("\n").map((s) => s.trim()).filter(Boolean);
+    const payload = {
+      slug,
+      date,
+      image,
+      title,
+      description,
+      content,
+      tags: selectedTags,
+      imageDisplay,
+      aspectRatio,
+      altImages: alts,
+    };
+
     try {
-      const alts = altImages.split("\n").map((s) => s.trim()).filter(Boolean);
-      if (editing === "__new__") {
-        const payload: ProjectCreateReq = {
-          slug, date, image, title, description, content,
-          tags, imageDisplay, aspectRatio, altImages: alts,
-        };
-        await adminProjects.create(payload, apiKey);
+      if (editing && editing !== "__new__") {
+        await adminProjects.update(editing, payload, token);
       } else {
-        await adminProjects.update(editing!, {
-          date, image, title, description, content,
-          tags, imageDisplay, aspectRatio, altImages: alts,
-        }, apiKey);
+        await adminProjects.create(payload, token);
       }
+      setEditing(null);
       resetForm();
-      await refresh();
-    } catch (e) {
-      setError(String(e));
+      loadData();
+    } catch (err) {
+      setError(String(err));
+      console.error(err);
     } finally {
       setSaving(false);
     }
@@ -123,16 +137,23 @@ export default function ProjectsPanel({ apiKey }: { apiKey: string }) {
     if (!confirm(`Delete project "${s}"?`)) return;
     setError("");
     try {
-      await adminProjects.delete(s, apiKey);
-      await refresh();
-    } catch (e) {
-      setError(String(e));
+      await adminProjects.delete(s, token);
+      loadData();
+    } catch (err) {
+      setError(String(err));
+      console.error(err);
     }
   };
 
-  const toggleTag = (tag: string) => {
-    setTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+  const startCreate = () => {
+    resetForm();
+    setDate(new Date().toISOString().split("T")[0]);
+    setEditing("__new__");
+  };
+
+  const toggleTag = (tagKey: string) => {
+    setSelectedTags((prev) =>
+      prev.includes(tagKey) ? prev.filter((t) => t !== tagKey) : [...prev, tagKey]
     );
   };
 
@@ -152,37 +173,36 @@ export default function ProjectsPanel({ apiKey }: { apiKey: string }) {
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Slug (only on create) */}
             {editing === "__new__" && (
               <div>
                 <label className="block text-xs text-foreground/50 uppercase tracking-widest mb-1">Slug</label>
                 <input value={slug} onChange={(e) => setSlug(e.target.value)}
-                  className="w-full bg-background border border-surface-light rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-accent"
+                  className="w-full bg-background border border-surface-light rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-accent transition-colors"
                   placeholder="my-project-slug" />
               </div>
             )}
             <div>
               <label className="block text-xs text-foreground/50 uppercase tracking-widest mb-1">Date</label>
               <input type="date" value={date} onChange={(e) => setDate(e.target.value)}
-                className="w-full bg-background border border-surface-light rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-accent" />
+                className="w-full bg-background border border-surface-light rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-accent transition-colors" />
             </div>
             <div>
               <label className="block text-xs text-foreground/50 uppercase tracking-widest mb-1">Image URL</label>
               <input value={image} onChange={(e) => setImage(e.target.value)}
-                className="w-full bg-background border border-surface-light rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-accent"
+                className="w-full bg-background border border-surface-light rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-accent transition-colors"
                 placeholder="https://xavierarbat.com/images/projects/..." />
             </div>
             <div>
               <label className="block text-xs text-foreground/50 uppercase tracking-widest mb-1">Image Display</label>
               <select value={imageDisplay} onChange={(e) => setImageDisplay(e.target.value)}
-                className="w-full bg-background border border-surface-light rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-accent">
+                className="w-full bg-background border border-surface-light rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-accent transition-colors">
                 {DISPLAY_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-xs text-foreground/50 uppercase tracking-widest mb-1">Aspect Ratio</label>
               <select value={aspectRatio} onChange={(e) => setAspectRatio(e.target.value)}
-                className="w-full bg-background border border-surface-light rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-accent">
+                className="w-full bg-background border border-surface-light rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-accent transition-colors">
                 {RATIO_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
               </select>
             </div>
@@ -199,7 +219,7 @@ export default function ProjectsPanel({ apiKey }: { apiKey: string }) {
               {availableTags.map((t) => (
                 <button key={t.key} type="button" onClick={() => toggleTag(t.key)}
                   className={`text-xs px-3 py-1.5 rounded-lg border cursor-pointer transition-colors ${
-                    tags.includes(t.key)
+                    selectedTags.includes(t.key)
                       ? "border-accent-cyan text-accent-cyan bg-accent-cyan/10"
                       : "border-surface-light text-foreground/40 hover:text-foreground/60"
                   }`}>
@@ -214,18 +234,17 @@ export default function ProjectsPanel({ apiKey }: { apiKey: string }) {
             <label className="block text-xs text-foreground/50 uppercase tracking-widest mb-1">
               Alt Images (one URL per line)
             </label>
-            <textarea value={altImages} onChange={(e) => setAltImages(e.target.value)} rows={3}
+            <textarea value={altImagesText} onChange={(e) => setAltImagesText(e.target.value)} rows={3}
               className="w-full bg-background border border-surface-light rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-accent resize-y font-mono"
-              placeholder={"https://xavierarbat.com/images/projects/detail-1.jpg\nhttps://xavierarbat.com/images/projects/detail-2.jpg"} />
+              placeholder={"URL 1\nURL 2"} />
           </div>
 
-          {/* Actions */}
           <div className="flex gap-3 pt-2">
             <button onClick={handleSave} disabled={saving}
               className="px-5 py-2 bg-accent text-background rounded-lg text-sm font-semibold hover:bg-accent/80 disabled:opacity-50 cursor-pointer transition-colors">
               {saving ? "Saving..." : editing === "__new__" ? "Create" : "Update"}
             </button>
-            <button onClick={resetForm}
+            <button onClick={() => { setEditing(null); resetForm(); }}
               className="px-5 py-2 border border-surface-light text-foreground/60 rounded-lg text-sm hover:text-foreground cursor-pointer transition-colors">
               Cancel
             </button>
@@ -236,7 +255,7 @@ export default function ProjectsPanel({ apiKey }: { apiKey: string }) {
       {/* --- LIST --- */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm text-foreground/50 uppercase tracking-widest">
-          Projects ({items.length})
+          Projects ({projects.length})
         </h3>
         {editing === null && (
           <button onClick={startCreate}
@@ -248,11 +267,11 @@ export default function ProjectsPanel({ apiKey }: { apiKey: string }) {
 
       {loading ? (
         <p className="text-foreground/30 text-sm">Loading...</p>
-      ) : items.length === 0 ? (
+      ) : projects.length === 0 ? (
         <p className="text-foreground/30 text-sm">No projects yet.</p>
       ) : (
         <div className="space-y-2">
-          {items.map((item) => (
+          {projects.map((item) => (
             <div key={item.slug}
               className="flex items-center justify-between p-4 bg-surface border border-surface-light rounded-xl">
               <div className="flex-1 min-w-0">
@@ -267,7 +286,7 @@ export default function ProjectsPanel({ apiKey }: { apiKey: string }) {
                 </div>
               </div>
               <div className="flex gap-2 ml-4 shrink-0">
-                <button onClick={() => startEdit(item.slug)}
+                <button onClick={() => handleEdit(item.slug)}
                   className="text-xs px-3 py-1.5 border border-surface-light text-foreground/50 rounded-lg hover:text-accent-cyan hover:border-accent-cyan cursor-pointer transition-colors">
                   Edit
                 </button>

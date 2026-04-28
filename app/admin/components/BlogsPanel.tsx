@@ -13,92 +13,106 @@ interface BlogItem {
   shortDescription: string;
 }
 
-export default function BlogsPanel({ apiKey }: { apiKey: string }) {
-  const [items, setItems] = useState<BlogItem[]>([]);
+export default function BlogsPanel({ token }: { token: string }) {
+  const [blogs, setBlogs] = useState<BlogItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [editing, setEditing] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   // Form state
   const [slug, setSlug] = useState("");
   const [date, setDate] = useState("");
-  const [title, setTitle] = useState<I18nMap>({ ...EMPTY_I18N });
-  const [description, setDescription] = useState<I18nMap>({ ...EMPTY_I18N });
-  const [content, setContent] = useState<I18nMap>({ ...EMPTY_I18N });
-  const [saving, setSaving] = useState(false);
+  const [title, setTitle] = useState<I18nMap>(EMPTY_I18N);
+  const [description, setDescription] = useState<I18nMap>(EMPTY_I18N);
+  const [content, setContent] = useState<I18nMap>(EMPTY_I18N);
 
-  const refresh = useCallback(async () => {
-    setLoading(true); setError("");
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    setError("");
     try {
-      const data = (await adminBlogs.list(apiKey)) as BlogItem[];
-      setItems(data);
-    } catch (e) {
-      setError(String(e));
+      const data = (await adminBlogs.list(token)) as BlogItem[];
+      setBlogs(data);
+    } catch (err) {
+      setError(String(err));
+      console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [apiKey]);
+  }, [token]);
 
-  useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const resetForm = () => {
-    setSlug(""); setDate("");
-    setTitle({ ...EMPTY_I18N }); setDescription({ ...EMPTY_I18N }); setContent({ ...EMPTY_I18N });
-    setEditing(null);
+    setSlug("");
+    setDate("");
+    setTitle(EMPTY_I18N);
+    setDescription(EMPTY_I18N);
+    setContent(EMPTY_I18N);
+    setError("");
   };
 
-  const startCreate = () => {
-    resetForm();
-    setDate(new Date().toISOString().split("T")[0]);
-    setEditing("__new__");
-  };
-
-  const startEdit = async (s: string) => {
+  const handleEdit = async (s: string) => {
+    setEditing(s);
     setError("");
     try {
       const [en, es, ca] = await Promise.all([
-        adminBlogs.detail(s, apiKey, "en") as Promise<Record<string, string>>,
-        adminBlogs.detail(s, apiKey, "es") as Promise<Record<string, string>>,
-        adminBlogs.detail(s, apiKey, "ca") as Promise<Record<string, string>>,
+        adminBlogs.detail(s, token, "en") as Promise<any>,
+        adminBlogs.detail(s, token, "es") as Promise<any>,
+        adminBlogs.detail(s, token, "ca") as Promise<any>,
       ]);
+
       setSlug(en.slug);
       setDate(en.date);
       setTitle({ en: en.title, es: es.title, ca: ca.title });
-      setDescription({ en: en.description ?? "", es: es.description ?? "", ca: ca.description ?? "" });
-      setContent({ en: en.content ?? "", es: es.content ?? "", ca: ca.content ?? "" });
-      setEditing(s);
-    } catch (e) {
-      setError(String(e));
+      setDescription({ en: en.description, es: es.description, ca: ca.description });
+      setContent({ en: en.content, es: es.content, ca: ca.content });
+    } catch (err) {
+      setError(String(err));
+      console.error(err);
     }
   };
 
   const handleSave = async () => {
-    setSaving(true); setError("");
+    setSaving(true);
+    setError("");
+    const payload = { slug, date, title, description, content };
+
     try {
-      if (editing === "__new__") {
-        const payload: BlogCreateReq = { slug, date, title, description, content };
-        await adminBlogs.create(payload, apiKey);
+      if (editing && editing !== "__new__") {
+        await adminBlogs.update(editing, { date, title, description, content }, token);
       } else {
-        await adminBlogs.update(editing!, { date, title, description, content }, apiKey);
+        await adminBlogs.create(payload, token);
       }
+      setEditing(null);
       resetForm();
-      await refresh();
-    } catch (e) {
-      setError(String(e));
+      loadData();
+    } catch (err) {
+      setError(String(err));
+      console.error(err);
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (s: string) => {
-    if (!confirm(`Delete blog "${s}"?`)) return;
+    if (!confirm(`Delete blog post "${s}"?`)) return;
     setError("");
     try {
-      await adminBlogs.delete(s, apiKey);
-      await refresh();
-    } catch (e) {
-      setError(String(e));
+      await adminBlogs.delete(s, token);
+      loadData();
+    } catch (err) {
+      setError(String(err));
+      console.error(err);
     }
+  };
+
+  const startCreate = () => {
+    resetForm();
+    setDate(new Date().toISOString().split("T")[0]);
+    setEditing("__new__");
   };
 
   return (
@@ -121,14 +135,14 @@ export default function BlogsPanel({ apiKey }: { apiKey: string }) {
               <div>
                 <label className="block text-xs text-foreground/50 uppercase tracking-widest mb-1">Slug</label>
                 <input value={slug} onChange={(e) => setSlug(e.target.value)}
-                  className="w-full bg-background border border-surface-light rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-accent"
+                  className="w-full bg-background border border-surface-light rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-accent transition-colors"
                   placeholder="my-blog-post-slug" />
               </div>
             )}
             <div>
               <label className="block text-xs text-foreground/50 uppercase tracking-widest mb-1">Date</label>
               <input type="date" value={date} onChange={(e) => setDate(e.target.value)}
-                className="w-full bg-background border border-surface-light rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-accent" />
+                className="w-full bg-background border border-surface-light rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-accent transition-colors" />
             </div>
           </div>
 
@@ -141,7 +155,7 @@ export default function BlogsPanel({ apiKey }: { apiKey: string }) {
               className="px-5 py-2 bg-accent text-background rounded-lg text-sm font-semibold hover:bg-accent/80 disabled:opacity-50 cursor-pointer transition-colors">
               {saving ? "Saving..." : editing === "__new__" ? "Create" : "Update"}
             </button>
-            <button onClick={resetForm}
+            <button onClick={() => { setEditing(null); resetForm(); }}
               className="px-5 py-2 border border-surface-light text-foreground/60 rounded-lg text-sm hover:text-foreground cursor-pointer transition-colors">
               Cancel
             </button>
@@ -152,7 +166,7 @@ export default function BlogsPanel({ apiKey }: { apiKey: string }) {
       {/* --- LIST --- */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm text-foreground/50 uppercase tracking-widest">
-          Blog Posts ({items.length})
+          Blog Posts ({blogs.length})
         </h3>
         {editing === null && (
           <button onClick={startCreate}
@@ -164,11 +178,11 @@ export default function BlogsPanel({ apiKey }: { apiKey: string }) {
 
       {loading ? (
         <p className="text-foreground/30 text-sm">Loading...</p>
-      ) : items.length === 0 ? (
+      ) : blogs.length === 0 ? (
         <p className="text-foreground/30 text-sm">No blog posts yet.</p>
       ) : (
         <div className="space-y-2">
-          {items.map((item) => (
+          {blogs.map((item) => (
             <div key={item.slug}
               className="flex items-center justify-between p-4 bg-surface border border-surface-light rounded-xl">
               <div className="flex-1 min-w-0">
@@ -179,7 +193,7 @@ export default function BlogsPanel({ apiKey }: { apiKey: string }) {
                 )}
               </div>
               <div className="flex gap-2 ml-4 shrink-0">
-                <button onClick={() => startEdit(item.slug)}
+                <button onClick={() => handleEdit(item.slug)}
                   className="text-xs px-3 py-1.5 border border-surface-light text-foreground/50 rounded-lg hover:text-accent-cyan hover:border-accent-cyan cursor-pointer transition-colors">
                   Edit
                 </button>

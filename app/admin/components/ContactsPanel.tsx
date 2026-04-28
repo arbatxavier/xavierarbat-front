@@ -14,72 +14,76 @@ interface ContactItem {
   showInFooter: boolean;
 }
 
-export default function ContactsPanel({ apiKey }: { apiKey: string }) {
-  const [items, setItems] = useState<ContactItem[]>([]);
+export default function ContactsPanel({ token }: { token: string }) {
+  const [contacts, setContacts] = useState<ContactItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [editing, setEditing] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   // Form state
   const [name, setName] = useState("");
-  const [display, setDisplay] = useState<I18nMap>({ ...EMPTY_I18N });
+  const [display, setDisplay] = useState<I18nMap>(EMPTY_I18N);
   const [value, setValue] = useState("");
   const [link, setLink] = useState("");
-  const [showInFooter, setShowInFooter] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [showInFooter, setShowInFooter] = useState(false);
 
-  const refresh = useCallback(async () => {
-    setLoading(true); setError("");
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    setError("");
     try {
-      const data = (await adminContacts.list(apiKey)) as ContactItem[];
-      setItems(data);
-    } catch (e) {
-      setError(String(e));
+      const data = (await adminContacts.list(token)) as ContactItem[];
+      setContacts(data);
+    } catch (err) {
+      setError(String(err));
+      console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [apiKey]);
+  }, [token]);
 
-  useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const resetForm = () => {
-    setName(""); setDisplay({ ...EMPTY_I18N }); setValue(""); setLink(""); setShowInFooter(true);
-    setEditing(null);
-  };
-
-  const startCreate = () => {
-    resetForm();
-    setEditing("__new__");
+    setName("");
+    setDisplay(EMPTY_I18N);
+    setValue("");
+    setLink("");
+    setShowInFooter(false);
+    setError("");
   };
 
   const startEdit = (item: ContactItem) => {
     setName(item.name);
     // Display from the list is already translated (single string).
-    // We set all 3 locales to the current value — user can refine each.
+    // We set all 3 locales to the current value as a starting point.
     setDisplay({ en: item.display, es: item.display, ca: item.display });
     setValue(item.value);
     setLink(item.link ?? "");
     setShowInFooter(item.showInFooter);
     setEditing(item.name);
+    setError("");
   };
 
   const handleSave = async () => {
-    setSaving(true); setError("");
+    setSaving(true);
+    setError("");
+    const payload = { name, display, value, link: link || null, showInFooter };
+
     try {
-      if (editing === "__new__") {
-        const payload: ContactCreateReq = {
-          name, display, value, link: link || null, showInFooter,
-        };
-        await adminContacts.create(payload, apiKey);
+      if (editing && editing !== "__new__") {
+        await adminContacts.update(editing, { display, value, link: link || null, showInFooter }, token);
       } else {
-        await adminContacts.update(editing!, {
-          display, value, link: link || null, showInFooter,
-        }, apiKey);
+        await adminContacts.create(payload, token);
       }
+      setEditing(null);
       resetForm();
-      await refresh();
-    } catch (e) {
-      setError(String(e));
+      loadData();
+    } catch (err) {
+      setError(String(err));
+      console.error(err);
     } finally {
       setSaving(false);
     }
@@ -89,11 +93,17 @@ export default function ContactsPanel({ apiKey }: { apiKey: string }) {
     if (!confirm(`Delete contact "${n}"?`)) return;
     setError("");
     try {
-      await adminContacts.delete(n, apiKey);
-      await refresh();
-    } catch (e) {
-      setError(String(e));
+      await adminContacts.delete(n, token);
+      loadData();
+    } catch (err) {
+      setError(String(err));
+      console.error(err);
     }
+  };
+
+  const startCreate = () => {
+    resetForm();
+    setEditing("__new__");
   };
 
   return (
@@ -118,20 +128,20 @@ export default function ContactsPanel({ apiKey }: { apiKey: string }) {
                   Name (identifier)
                 </label>
                 <input value={name} onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-background border border-surface-light rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-accent"
+                  className="w-full bg-background border border-surface-light rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-accent transition-colors"
                   placeholder="instagram, email, github..." />
               </div>
             )}
             <div>
               <label className="block text-xs text-foreground/50 uppercase tracking-widest mb-1">Value</label>
               <input value={value} onChange={(e) => setValue(e.target.value)}
-                className="w-full bg-background border border-surface-light rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-accent"
+                className="w-full bg-background border border-surface-light rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-accent transition-colors"
                 placeholder="@username, email@example.com, +34..." />
             </div>
             <div>
               <label className="block text-xs text-foreground/50 uppercase tracking-widest mb-1">Link (URL)</label>
               <input value={link} onChange={(e) => setLink(e.target.value)}
-                className="w-full bg-background border border-surface-light rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-accent"
+                className="w-full bg-background border border-surface-light rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:border-accent transition-colors"
                 placeholder="https://..." />
             </div>
           </div>
@@ -149,7 +159,7 @@ export default function ContactsPanel({ apiKey }: { apiKey: string }) {
               className="px-5 py-2 bg-accent text-background rounded-lg text-sm font-semibold hover:bg-accent/80 disabled:opacity-50 cursor-pointer transition-colors">
               {saving ? "Saving..." : editing === "__new__" ? "Create" : "Update"}
             </button>
-            <button onClick={resetForm}
+            <button onClick={() => { setEditing(null); resetForm(); }}
               className="px-5 py-2 border border-surface-light text-foreground/60 rounded-lg text-sm hover:text-foreground cursor-pointer transition-colors">
               Cancel
             </button>
@@ -160,7 +170,7 @@ export default function ContactsPanel({ apiKey }: { apiKey: string }) {
       {/* --- LIST --- */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm text-foreground/50 uppercase tracking-widest">
-          Contacts ({items.length})
+          Contacts ({contacts.length})
         </h3>
         {editing === null && (
           <button onClick={startCreate}
@@ -172,11 +182,11 @@ export default function ContactsPanel({ apiKey }: { apiKey: string }) {
 
       {loading ? (
         <p className="text-foreground/30 text-sm">Loading...</p>
-      ) : items.length === 0 ? (
+      ) : contacts.length === 0 ? (
         <p className="text-foreground/30 text-sm">No contacts yet.</p>
       ) : (
         <div className="space-y-2">
-          {items.map((item) => (
+          {contacts.map((item) => (
             <div key={item.name}
               className="flex items-center justify-between p-4 bg-surface border border-surface-light rounded-xl">
               <div className="flex-1 min-w-0">
