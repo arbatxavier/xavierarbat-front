@@ -68,7 +68,7 @@ export default function Card({
           )}
         </div>
         {description && (
-          <p className="text-sm text-foreground/60 leading-relaxed">
+          <p className="text-sm text-foreground/60 leading-relaxed line-clamp-1">
             {description}
           </p>
         )}
