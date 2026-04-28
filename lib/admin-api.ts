@@ -143,19 +143,37 @@ export const adminAuth = {
 
 export interface TagCreateReq {
   key: string;
-  label?: string | null;
+  label?: Partial<I18nMap> | null;
 }
 
 export interface TagUpdateReq {
-  label: string;
+  label: Partial<I18nMap>;
 }
 
 export const adminTags = {
   list: (token: string) =>
     adminFetch<{ key: string; label: string }[]>("/tags", token),
 
-  detail: (tagKey: string, token: string) =>
-    adminFetch<{ key: string; label: string }>(`/tags/${tagKey}`, token),
+  detail: (tagKey: string, token: string, locale = "en") =>
+    adminFetch<{ key: string; label: string }>(`/tags/${tagKey}`, token, {
+      headers: { "Accept-Language": locale } as Record<string, string>,
+    }),
+
+  /** Fetch all 3 locale labels for a tag */
+  detailI18n: async (tagKey: string, token: string): Promise<{ key: string; label: I18nMap }> => {
+    const [en, es, ca] = await Promise.all([
+      adminFetch<{ key: string; label: string }>(`/tags/${tagKey}`, token, {
+        headers: { "Accept-Language": "en" } as Record<string, string>,
+      }),
+      adminFetch<{ key: string; label: string }>(`/tags/${tagKey}`, token, {
+        headers: { "Accept-Language": "es" } as Record<string, string>,
+      }),
+      adminFetch<{ key: string; label: string }>(`/tags/${tagKey}`, token, {
+        headers: { "Accept-Language": "ca" } as Record<string, string>,
+      }),
+    ]);
+    return { key: en.key, label: { en: en.label, es: es.label, ca: ca.label } };
+  },
 
   create: (data: TagCreateReq, token: string) =>
     adminFetch<{ key: string; label: string }>("/tags", token, {
