@@ -7,6 +7,8 @@ import ContactsPanel from "./components/ContactsPanel";
 import ImagesPanel from "./components/ImagesPanel";
 import TagsPanel from "./components/TagsPanel";
 
+import { adminAuth } from "@/lib/admin-api";
+
 type Tab = "projects" | "blogs" | "contacts" | "tags" | "images";
 
 const TABS: { key: Tab; label: string }[] = [
@@ -17,59 +19,97 @@ const TABS: { key: Tab; label: string }[] = [
   { key: "images", label: "Images" },
 ];
 
-const SESSION_KEY = "admin_api_key";
+const SESSION_KEY = "admin_auth_token";
 
 export default function AdminPage() {
-  const [apiKey, setApiKey] = useState("");
-  const [keyInput, setKeyInput] = useState("");
+  const [token, setToken] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState<Tab>("projects");
 
-  // Restore key from sessionStorage on mount
+  // Restore token from sessionStorage on mount
   useEffect(() => {
     const stored = sessionStorage.getItem(SESSION_KEY);
-    if (stored) setApiKey(stored);
+    if (stored) setToken(stored);
   }, []);
 
-  const handleLogin = () => {
-    const trimmed = keyInput.trim();
-    if (!trimmed) return;
-    sessionStorage.setItem(SESSION_KEY, trimmed);
-    setApiKey(trimmed);
+  const handleLogin = async () => {
+    if (!username || !password) return;
+    setLoading(true);
+    setError("");
+    try {
+      const res = await adminAuth.login({ username, password });
+      sessionStorage.setItem(SESSION_KEY, res.token);
+      setToken(res.token);
+    } catch (err) {
+      console.error(err);
+      setError("Credenciales inválidas o error de conexión.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleLogout = () => {
     sessionStorage.removeItem(SESSION_KEY);
-    setApiKey("");
-    setKeyInput("");
+    setToken("");
+    setUsername("");
+    setPassword("");
   };
 
   // -----------------------------------------------------------------------
-  // API Key gate
+  // Auth Gate
   // -----------------------------------------------------------------------
-  if (!apiKey) {
+  if (!token) {
     return (
       <section className="pt-28 pb-20 px-6 max-w-md mx-auto">
         <div className="bg-surface border border-surface-light rounded-2xl p-8">
           <h1 className="text-2xl font-bold text-foreground mb-2">Admin</h1>
           <p className="text-sm text-foreground/40 mb-6">
-            Enter your API key to manage content.
+            Inicia sesión para gestionar el contenido.
           </p>
 
           <div className="space-y-4">
-            <input
-              type="password"
-              value={keyInput}
-              onChange={(e) => setKeyInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-              placeholder="X-API-Key"
-              className="w-full bg-background border border-surface-light rounded-lg px-4 py-3 text-sm text-foreground focus:outline-none focus:border-accent transition-colors"
-              autoFocus
-            />
+            <div>
+              <label className="block text-xs font-medium text-foreground/40 uppercase tracking-wider mb-1.5 ml-1">
+                Usuario
+              </label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="nombre de usuario"
+                className="w-full bg-background border border-surface-light rounded-lg px-4 py-3 text-sm text-foreground focus:outline-none focus:border-accent transition-colors"
+                autoFocus
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-foreground/40 uppercase tracking-wider mb-1.5 ml-1">
+                Contraseña
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                placeholder="••••••••"
+                className="w-full bg-background border border-surface-light rounded-lg px-4 py-3 text-sm text-foreground focus:outline-none focus:border-accent transition-colors"
+              />
+            </div>
+
+            {error && (
+              <p className="text-xs text-red-400 mt-2 px-1">
+                {error}
+              </p>
+            )}
+
             <button
               onClick={handleLogin}
-              className="w-full py-3 bg-accent text-background rounded-lg text-sm font-semibold hover:bg-accent/80 cursor-pointer transition-colors"
+              disabled={loading}
+              className="w-full py-3 bg-accent text-background rounded-lg text-sm font-semibold hover:bg-accent/80 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors mt-2"
             >
-              Enter
+              {loading ? "Iniciando sesión..." : "Entrar"}
             </button>
           </div>
         </div>
@@ -91,7 +131,7 @@ export default function AdminPage() {
           onClick={handleLogout}
           className="text-xs px-4 py-1.5 border border-surface-light text-foreground/40 rounded-lg hover:text-red-400 hover:border-red-400 cursor-pointer transition-colors"
         >
-          Logout
+          Cerrar sesión
         </button>
       </div>
 
@@ -113,11 +153,11 @@ export default function AdminPage() {
       </div>
 
       {/* Panel */}
-      {tab === "projects" && <ProjectsPanel apiKey={apiKey} />}
-      {tab === "blogs" && <BlogsPanel apiKey={apiKey} />}
-      {tab === "contacts" && <ContactsPanel apiKey={apiKey} />}
-      {tab === "tags" && <TagsPanel apiKey={apiKey} />}
-      {tab === "images" && <ImagesPanel apiKey={apiKey} />}
+      {tab === "projects" && <ProjectsPanel token={token} />}
+      {tab === "blogs" && <BlogsPanel token={token} />}
+      {tab === "contacts" && <ContactsPanel token={token} />}
+      {tab === "tags" && <TagsPanel token={token} />}
+      {tab === "images" && <ImagesPanel token={token} />}
     </section>
   );
 }

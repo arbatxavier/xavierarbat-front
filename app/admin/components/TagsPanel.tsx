@@ -8,52 +8,51 @@ interface Tag {
   label: string;
 }
 
-export default function TagsPanel({ apiKey }: { apiKey: string }) {
+export default function TagsPanel({ token }: { token: string }) {
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  // Create form
-  const [newKey, setNewKey] = useState("");
-  const [newLabel, setNewLabel] = useState("");
   const [creating, setCreating] = useState(false);
 
-  // Edit state
+  // Form state
+  const [newKey, setNewKey] = useState("");
+  const [newLabel, setNewLabel] = useState("");
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [editLabel, setEditLabel] = useState("");
 
-  const refresh = useCallback(async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const data = await adminTags.list(apiKey);
+      const data = await adminTags.list(token);
       setTags(data);
-    } catch (e) {
-      setError(String(e));
+    } catch (err) {
+      setError(String(err));
+      console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [apiKey]);
+  }, [token]);
 
   useEffect(() => {
-    refresh();
-  }, [refresh]);
+    loadData();
+  }, [loadData]);
 
   const handleCreate = async () => {
-    const key = newKey.trim().toUpperCase().replace(/\s+/g, "_");
-    if (!key) return;
+    if (!newKey.trim()) return;
     setCreating(true);
     setError("");
     try {
       await adminTags.create(
-        { key, label: newLabel.trim() || null },
-        apiKey,
+        { key: newKey.trim(), label: newLabel.trim() || null },
+        token,
       );
       setNewKey("");
       setNewLabel("");
-      await refresh();
-    } catch (e) {
-      setError(String(e));
+      loadData();
+    } catch (err) {
+      setError(String(err));
+      console.error(err);
     } finally {
       setCreating(false);
     }
@@ -63,12 +62,13 @@ export default function TagsPanel({ apiKey }: { apiKey: string }) {
     if (!editLabel.trim()) return;
     setError("");
     try {
-      await adminTags.update(tagKey, { label: editLabel.trim() }, apiKey);
+      await adminTags.update(tagKey, { label: editLabel.trim() }, token);
       setEditingKey(null);
       setEditLabel("");
-      await refresh();
-    } catch (e) {
-      setError(String(e));
+      loadData();
+    } catch (err) {
+      setError(String(err));
+      console.error(err);
     }
   };
 
@@ -76,16 +76,18 @@ export default function TagsPanel({ apiKey }: { apiKey: string }) {
     if (!confirm(`Delete tag "${tagKey}"?`)) return;
     setError("");
     try {
-      await adminTags.delete(tagKey, apiKey);
-      await refresh();
-    } catch (e) {
-      setError(String(e));
+      await adminTags.delete(tagKey, token);
+      loadData();
+    } catch (err) {
+      setError(String(err));
+      console.error(err);
     }
   };
 
   const startEdit = (tag: Tag) => {
     setEditingKey(tag.key);
     setEditLabel(tag.label);
+    setError("");
   };
 
   const cancelEdit = () => {

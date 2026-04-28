@@ -5,7 +5,7 @@ import type { ContactChannel, IconName } from "@/app/data/contacts";
 // Config
 // ---------------------------------------------------------------------------
 
-const API_BASE = "https://api.xavierarbat.com/api/v1";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.xavierarbat.com/api/v1";
 
 // ---------------------------------------------------------------------------
 // API DTO types (match the OpenAPI spec)

@@ -15,6 +15,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const API_ROOT = process.env.NEXT_PUBLIC_API_ROOT || "https://api.xavierarbat.com";
+
 export const metadata: Metadata = {
   title: 'Xavier Arbat | Fullstack Developer & Part-time Artist',
   description: 'Explora mi portfolio: obras artísticas, blog de reflexiones y proyectos de programación con frontend y backend públicos en GitHub.',
@@ -27,7 +29,7 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: 'https://api.xavierarbat.com/uploads/projects/og-image.png',
+        url: `${API_ROOT}/uploads/projects/og-image.png`,
         width: 1200,
         height: 630,
         alt: 'Previsualización del Portfolio de Xavier Arbat',
@@ -38,7 +40,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Xavier Arbat | Fullstack Developer & Artist',
     description: 'Desarrollo de software y obras de arte.',
-    images: ['https://api.xavierarbat.com/uploads/projects/og-image.png'],
+    images: [`${API_ROOT}/uploads/projects/og-image.png`],
   },
 };
 

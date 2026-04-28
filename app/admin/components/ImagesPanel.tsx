@@ -6,48 +6,56 @@ import { adminImages } from "@/lib/admin-api";
 
 const FOLDERS = ["projects", "blogs", "home", "contacts"];
 
-export default function ImagesPanel({ apiKey }: { apiKey: string }) {
-  const [folder, setFolder] = useState("projects");
+export default function ImagesPanel({ token }: { token: string }) {
   const [images, setImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [folder, setFolder] = useState("projects");
   const [uploading, setUploading] = useState(false);
-  const [copied, setCopied] = useState<string | null>(null);
+  const [error, setError] = useState("");
   const [dragOver, setDragOver] = useState(false);
+  const [copied, setCopied] = useState<string | null>(null);
+  
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const refresh = useCallback(async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const data = await adminImages.list(folder, apiKey);
+      const data = await adminImages.list(folder, token);
       setImages(data);
-    } catch (e) {
-      setError(String(e));
+    } catch (err) {
+      setError(String(err));
+      console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [folder, apiKey]);
+  }, [folder, token]);
 
   useEffect(() => {
-    refresh();
-  }, [refresh]);
+    loadData();
+  }, [loadData]);
 
-  const handleUpload = async (files: FileList | null) => {
+  const handleUploadFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
+
     setUploading(true);
     setError("");
     try {
-      for (const file of Array.from(files)) {
-        await adminImages.upload(folder, file, apiKey);
-      }
-      await refresh();
-    } catch (e) {
-      setError(String(e));
+      // Upload one by one or concurrently
+      await Promise.all(
+        Array.from(files).map((file) => adminImages.upload(folder, file, token))
+      );
+      loadData();
+    } catch (err) {
+      setError("Upload failed");
+      console.error(err);
     } finally {
       setUploading(false);
-      if (fileRef.current) fileRef.current.value = "";
     }
+  };
+
+  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleUploadFiles(e.target.files);
   };
 
   const handleDelete = async (path: string) => {
@@ -55,10 +63,11 @@ export default function ImagesPanel({ apiKey }: { apiKey: string }) {
     if (!confirm(`Delete "${filename}"?`)) return;
     setError("");
     try {
-      await adminImages.delete(folder, filename, apiKey);
-      await refresh();
-    } catch (e) {
-      setError(String(e));
+      await adminImages.delete(folder, filename, token);
+      loadData();
+    } catch (err) {
+      setError(String(err));
+      console.error(err);
     }
   };
 
@@ -72,7 +81,7 @@ export default function ImagesPanel({ apiKey }: { apiKey: string }) {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    handleUpload(e.dataTransfer.files);
+    handleUploadFiles(e.dataTransfer.files);
   };
 
   return (
@@ -84,7 +93,7 @@ export default function ImagesPanel({ apiKey }: { apiKey: string }) {
       )}
 
       {/* Folder selector + Upload button */}
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex flex-wrap items-center gap-4 mb-6">
         <div className="flex gap-1">
           {FOLDERS.map((f) => (
             <button
@@ -109,7 +118,7 @@ export default function ImagesPanel({ apiKey }: { apiKey: string }) {
           multiple
           accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml"
           className="hidden"
-          onChange={(e) => handleUpload(e.target.files)}
+          onChange={handleUpload}
         />
         <button
           onClick={() => fileRef.current?.click()}
@@ -172,6 +181,7 @@ export default function ImagesPanel({ apiKey }: { apiKey: string }) {
                     alt={filename}
                     fill
                     className="object-cover"
+                    unoptimized
                     sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
                   />
 
