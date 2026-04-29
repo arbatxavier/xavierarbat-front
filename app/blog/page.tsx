@@ -3,15 +3,16 @@
 import { motion } from "framer-motion";
 import { useI18n } from "../i18n/provider";
 import { useApiData } from "../hooks/useApiData";
+import { fallbackBlogs } from "../data/defaults/blogs";
+import { fallbackBlogsToLocal } from "../data/mappers";
 import { fetchBlogs, type BlogPost } from "@/lib/api";
 
 export default function BlogPage() {
   const { t, locale } = useI18n();
 
-  // No local blog data to pre-populate; start empty and fetch from API
   const { data: posts, isRevalidating } = useApiData<BlogPost[]>({
     key: `blogs-${locale}`,
-    initialData: [],
+    initialData: fallbackBlogsToLocal(fallbackBlogs, locale),
     fetcher: () => fetchBlogs(locale),
   });
 

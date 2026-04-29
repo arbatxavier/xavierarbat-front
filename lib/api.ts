@@ -63,13 +63,13 @@ export interface ApiBlogDetail {
 // Mappers: API → local types
 // ---------------------------------------------------------------------------
 
-const IMAGE_DISPLAY_MAP: Record<string, ImageDisplay> = {
+export const IMAGE_DISPLAY_MAP: Record<string, ImageDisplay> = {
   COVER: "cover",
   CONTAIN: "contain",
   TOP: "top",
 };
 
-const ASPECT_RATIO_MAP: Record<string, AspectRatio> = {
+export const ASPECT_RATIO_MAP: Record<string, AspectRatio> = {
   PORTRAIT: "portrait",
   SQUARE: "square",
   FOURTHIRDS: "fourthirds",
@@ -109,7 +109,7 @@ export function apiProjectDetailToLocal(
 }
 
 /** Map from contact name (API PK) → icon + hover colours */
-const CONTACT_STYLE: Record<
+export const CONTACT_STYLE: Record<
   string,
   {
     iconName: IconName;
@@ -168,7 +168,7 @@ const CONTACT_STYLE: Record<
   },
 };
 
-const DEFAULT_STYLE = {
+export const DEFAULT_STYLE = {
   iconName: "FiMail" as IconName,
   hoverBorder: "hover:border-accent",
   hoverIcon: "group-hover:text-accent",

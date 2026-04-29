@@ -4,19 +4,19 @@ import Link from "next/link";
 import { useI18n } from "../i18n/provider";
 import { useApiData } from "../hooks/useApiData";
 import {
-  contactChannels as localContacts,
   getIcon,
   type ContactChannel,
 } from "../data/contacts";
+import { fallbackContacts } from "../data/defaults/contacts";
+import { fallbackContactsToLocal } from "../data/mappers";
 import { fetchContacts } from "@/lib/api";
 
 export default function Footer() {
   const { t, locale } = useI18n();
 
-  // Stale-while-revalidate: start with local contacts, refresh from API
   const { data: allContacts } = useApiData<ContactChannel[]>({
     key: `contacts-footer-${locale}`,
-    initialData: localContacts,
+    initialData: fallbackContactsToLocal(fallbackContacts),
     fetcher: () => fetchContacts(locale),
   });
 

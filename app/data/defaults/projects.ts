@@ -1,5 +1,4 @@
 import type { FallbackProjectList } from "./types";
-import {Project} from "@/app/data/projects";
 
 export const fallbackProjects: FallbackProjectList[] = [
   {
