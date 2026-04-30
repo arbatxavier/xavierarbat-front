@@ -26,6 +26,7 @@ export default function BlogPage() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
+        <h1 className="sr-only">{t.nav.blog}</h1>
         <div className="bg-surface border border-surface-light rounded-2xl overflow-hidden">
           <div className="flex items-center gap-2 px-4 py-3 bg-surface-light">
             <span className="w-3 h-3 rounded-full bg-red-500" />
