@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { ReactNode } from "react";
+import { useState, ReactNode } from "react";
 import type { ImageDisplay, AspectRatio } from "../data/projects";
 
 const aspectClasses: Record<AspectRatio, string> = {
@@ -43,6 +43,8 @@ export default function Card({
   children,
   className = "",
 }: CardProps) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+
   const content = (
     <>
       {image && (
@@ -51,11 +53,17 @@ export default function Card({
             imageDisplay === "contain" ? "bg-surface" : ""
           }`}
         >
+          {!imageLoaded && (
+            <div className="absolute inset-0 bg-surface-light/50 animate-pulse" />
+          )}
           <Image
             src={image}
             alt={title}
             fill
-            className={`${fitClasses[imageDisplay]} group-hover:scale-105 transition-transform duration-500`}
+            className={`${fitClasses[imageDisplay]} transition duration-500 ${
+              imageLoaded ? "opacity-100" : "opacity-0"
+            } group-hover:scale-105`}
+            onLoad={() => setImageLoaded(true)}
           />
           <div className="absolute inset-0 bg-background/20 group-hover:bg-transparent transition-colors duration-300" />
         </div>
