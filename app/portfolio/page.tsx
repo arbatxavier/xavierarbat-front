@@ -14,19 +14,22 @@ import type { Project } from "../data/projects";
 import type { TagKey } from "../data/tags";
 
 export default function PortfolioPage() {
-  const { t, locale } = useI18n();
+  const { t, locale, mounted } = useI18n();
 
   // Stale-while-revalidate: start with local data, refresh from API
   const { data: projects } = useApiData<Project[]>({
     key: `projects-${locale}`,
     initialData: fallbackProjectsToLocal(fallbackProjects, locale),
     fetcher: () => fetchProjects(locale),
+    ready: mounted,
   });
 
+  // Tag labels from API (key→label map)
   const { data: apiTagLabels } = useApiData<Record<string, string>>({
     key: `tags-${locale}`,
     initialData: fallbackTagsToLocal(fallbackTags, locale),
     fetcher: () => fetchTags(locale),
+    ready: mounted,
   });
 
   const {

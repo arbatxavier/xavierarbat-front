@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import { I18nProvider } from "./i18n/provider";
+import { API_ROOT } from "@/lib/config";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,8 +15,6 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
-
-const API_ROOT = process.env.NEXT_PUBLIC_API_ROOT || "https://api.xavierarbat.com";
 
 export const metadata: Metadata = {
   title: 'Xavier Arbat | Fullstack Developer & Part-time Artist',

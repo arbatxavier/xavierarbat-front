@@ -14,7 +14,7 @@ import { fetchBlogDetail, type BlogPostDetail } from "@/lib/api";
 
 export default function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { t, locale } = useI18n();
+  const { t, locale, mounted } = useI18n();
 
   const initialPost = (() => {
     const fb = fallbackBlogs.find((b) => b.slug === slug);
@@ -25,6 +25,7 @@ export default function BlogPostPage() {
     key: `blog-${slug}-${locale}`,
     initialData: initialPost,
     fetcher: () => fetchBlogDetail(slug, locale),
+    ready: mounted,
   });
 
   const loading = !post && isRevalidating;

@@ -1,11 +1,10 @@
 import type { Project, ImageDisplay, AspectRatio } from "@/app/data/projects";
 import type { ContactChannel, IconName } from "@/app/data/contacts";
+import { API_BASE } from "./config";
 
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.xavierarbat.com/api/v1";
 
 // ---------------------------------------------------------------------------
 // API DTO types (match the OpenAPI spec)

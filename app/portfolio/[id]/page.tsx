@@ -20,7 +20,7 @@ type ProjectWithContent = Project & {
 
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { t, locale } = useI18n();
+  const { t, locale, mounted } = useI18n();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const localProject = (() => {
@@ -32,12 +32,14 @@ export default function ProjectDetailPage() {
     key: `project-${id}-${locale}`,
     initialData: localProject,
     fetcher: () => fetchProjectDetail(id, locale),
+    ready: mounted,
   });
 
   const { data: apiTagLabels } = useApiData<Record<string, string>>({
     key: `tags-${locale}`,
     initialData: fallbackTagsToLocal(fallbackTags, locale),
     fetcher: () => fetchTags(locale),
+    ready: mounted,
   });
 
   const tagLabel = useCallback(

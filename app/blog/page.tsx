@@ -8,12 +8,13 @@ import { fallbackBlogsToLocal } from "../data/mappers";
 import { fetchBlogs, type BlogPost } from "@/lib/api";
 
 export default function BlogPage() {
-  const { t, locale } = useI18n();
+  const { t, locale, mounted } = useI18n();
 
   const { data: posts, isRevalidating } = useApiData<BlogPost[]>({
     key: `blogs-${locale}`,
     initialData: fallbackBlogsToLocal(fallbackBlogs, locale),
     fetcher: () => fetchBlogs(locale),
+    ready: mounted,
   });
 
   const loading = posts.length === 0 && isRevalidating;

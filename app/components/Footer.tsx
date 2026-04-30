@@ -12,12 +12,13 @@ import { fallbackContactsToLocal } from "../data/mappers";
 import { fetchContacts } from "@/lib/api";
 
 export default function Footer() {
-  const { t, locale } = useI18n();
+  const { t, locale, mounted } = useI18n();
 
   const { data: allContacts } = useApiData<ContactChannel[]>({
     key: `contacts-footer-${locale}`,
     initialData: fallbackContactsToLocal(fallbackContacts),
     fetcher: () => fetchContacts(locale),
+    ready: mounted,
   });
 
   const links = allContacts.filter((ch) => ch.showInFooter);

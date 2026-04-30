@@ -12,12 +12,13 @@ import { fallbackContactsToLocal } from "../data/mappers";
 import { fetchContacts } from "@/lib/api";
 
 export default function ContactPage() {
-  const { t, locale } = useI18n();
+  const { t, locale, mounted } = useI18n();
 
   const { data: channels } = useApiData<ContactChannel[]>({
     key: `contacts-${locale}`,
     initialData: fallbackContactsToLocal(fallbackContacts),
     fetcher: () => fetchContacts(locale),
+    ready: mounted,
   });
 
   return (
