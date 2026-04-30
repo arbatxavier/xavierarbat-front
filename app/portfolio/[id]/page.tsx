@@ -7,7 +7,9 @@ import Link from "next/link";
 import { useState, useCallback } from "react";
 import { useI18n } from "../../i18n/provider";
 import { useApiData } from "../../hooks/useApiData";
-import { projects as localProjects } from "../../data/projects";
+import { fallbackProjects } from "../../data/defaults/projects";
+import { fallbackTags } from "../../data/defaults/tags";
+import { fallbackProjectToLocal, fallbackTagsToLocal } from "../../data/mappers";
 import { fetchProjectDetail, fetchTags } from "@/lib/api";
 import type { Project } from "../../data/projects";
 
@@ -18,22 +20,26 @@ type ProjectWithContent = Project & {
 
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { t, locale } = useI18n();
+  const { t, locale, mounted } = useI18n();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  // Find local project as initial data (match by id)
-  const localProject = localProjects.find((p) => p.id === id) ?? null;
+  const localProject = (() => {
+    const fb = fallbackProjects.find((p) => p.slug === id);
+    return fb ? fallbackProjectToLocal(fb, locale) : null;
+  })();
 
   const { data: project } = useApiData<ProjectWithContent | null>({
     key: `project-${id}-${locale}`,
     initialData: localProject,
     fetcher: () => fetchProjectDetail(id, locale),
+    ready: mounted,
   });
 
   const { data: apiTagLabels } = useApiData<Record<string, string>>({
     key: `tags-${locale}`,
-    initialData: {},
+    initialData: fallbackTagsToLocal(fallbackTags, locale),
     fetcher: () => fetchTags(locale),
+    ready: mounted,
   });
 
   const tagLabel = useCallback(

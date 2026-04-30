@@ -4,20 +4,21 @@ import { motion } from "framer-motion";
 import { useI18n } from "../i18n/provider";
 import { useApiData } from "../hooks/useApiData";
 import {
-  contactChannels as localContacts,
   getIcon,
   type ContactChannel,
 } from "../data/contacts";
+import { fallbackContacts } from "../data/defaults/contacts";
+import { fallbackContactsToLocal } from "../data/mappers";
 import { fetchContacts } from "@/lib/api";
 
 export default function ContactPage() {
-  const { t, locale } = useI18n();
+  const { t, locale, mounted } = useI18n();
 
-  // Stale-while-revalidate: start with local contacts, refresh from API
   const { data: channels } = useApiData<ContactChannel[]>({
     key: `contacts-${locale}`,
-    initialData: localContacts,
+    initialData: fallbackContactsToLocal(fallbackContacts),
     fetcher: () => fetchContacts(locale),
+    ready: mounted,
   });
 
   return (

@@ -6,26 +6,30 @@ import Card from "../components/Card";
 import { useI18n } from "../i18n/provider";
 import { useApiData } from "../hooks/useApiData";
 import { usePortfolioFilters } from "./hooks/usePortfolioFilters";
-import { projects as localProjects } from "../data/projects";
+import { fallbackProjects } from "../data/defaults/projects";
+import { fallbackTags } from "../data/defaults/tags";
+import { fallbackProjectsToLocal, fallbackTagsToLocal } from "../data/mappers";
 import { fetchProjects, fetchTags } from "@/lib/api";
 import type { Project } from "../data/projects";
 import type { TagKey } from "../data/tags";
 
 export default function PortfolioPage() {
-  const { t, locale } = useI18n();
+  const { t, locale, mounted } = useI18n();
 
   // Stale-while-revalidate: start with local data, refresh from API
   const { data: projects } = useApiData<Project[]>({
     key: `projects-${locale}`,
-    initialData: localProjects,
+    initialData: fallbackProjectsToLocal(fallbackProjects, locale),
     fetcher: () => fetchProjects(locale),
+    ready: mounted,
   });
 
-  // Tag labels from API (key→label map); fallback to i18n translations
+  // Tag labels from API (key→label map)
   const { data: apiTagLabels } = useApiData<Record<string, string>>({
     key: `tags-${locale}`,
-    initialData: {},
+    initialData: fallbackTagsToLocal(fallbackTags, locale),
     fetcher: () => fetchTags(locale),
+    ready: mounted,
   });
 
   const {

@@ -5,9 +5,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Button from "./components/Button";
 import { useI18n } from "./i18n/provider";
+import { SITE_URL } from "@/lib/config";
 
 const backgroundImages = [
-  "/images/home/motherboard.jpg",
+  `${SITE_URL}/images/home/motherboard.jpg`,
 ];
 
 export default function Home() {
@@ -128,7 +129,7 @@ export default function Home() {
           </div>
           <div className="relative aspect-square bg-surface border border-surface-light rounded-2xl overflow-hidden">
             <Image
-              src="/images/home/me.jpg"
+              src={`${SITE_URL}/images/home/me.jpg`}
               alt="Xavier Arbat"
               fill
               className="object-cover"

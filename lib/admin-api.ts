@@ -6,7 +6,7 @@
  * if the backend ever supports that.
  */
 
-const API = process.env.NEXT_PUBLIC_API_URL || "https://api.xavierarbat.com/api/v1";
+import { API_BASE, API_ROOT } from "./config";
 
 // ---------------------------------------------------------------------------
 // Types — match the OpenAPI request schemas
@@ -109,7 +109,7 @@ async function adminFetch<T>(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${API}${path}`, {
+  const res = await fetch(`${API_BASE}${path}`, {
     ...opts,
     headers,
   });
@@ -252,44 +252,6 @@ export const adminContacts = {
 // Images
 // ---------------------------------------------------------------------------
 
-const API_ROOT = process.env.NEXT_PUBLIC_API_ROOT || "https://api.xavierarbat.com";
-
-export const adminImages = {
-  /** Returns an array of URL paths like ["/uploads/projects/foo.jpg", ...] */
-  list: (folder: string, token: string) =>
-    adminFetch<string[]>(`/images/${folder}`, token),
-
-  /** Upload a file via multipart/form-data. Returns { url: "/uploads/..." } */
-  upload: async (folder: string, file: File, token: string): Promise<string> => {
-    const form = new FormData();
-    form.append("file", file);
-
-    const res = await fetch(`${API}/images/${folder}`, {
-      method: "POST",
-      headers: { 
-        "Authorization": `Bearer ${token}`
-      },
-      body: form,
-    });
-
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`${res.status}: ${text}`);
-    }
-
-    const data: Record<string, string> = await res.json();
-    return data.url ?? data.path ?? Object.values(data)[0] ?? "";
-  },
-
-  delete: (folder: string, filename: string, token: string) =>
-    adminFetch<void>(`/images/${folder}/${filename}`, token, {
-      method: "DELETE",
-    }),
-
-  /** Resolve a path like "/uploads/projects/foo.jpg" to a full URL */
-  publicUrl: (path: string) =>
-    path.startsWith("http") ? path : `${API_ROOT}${path}`,
-};
 
 // ---------------------------------------------------------------------------
 // Blogs

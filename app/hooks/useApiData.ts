@@ -59,10 +59,12 @@ export function useApiData<T>({
   key,
   initialData,
   fetcher,
+  ready = true,
 }: {
   key: string;
   initialData: T;
   fetcher: () => Promise<T>;
+  ready?: boolean;
 }): { data: T; isRevalidating: boolean } {
   // SSR-safe: always start with initialData (server has no localStorage)
   const [data, setData] = useState<T>(initialData);
@@ -70,6 +72,7 @@ export function useApiData<T>({
 
   const fetcherRef = useRef(fetcher);
   const dataRef = useRef(data);
+  const fetchingRef = useRef(false);
 
   // -----------------------------------------------------------------------
   // SYNC: keep refs updated with latest props/state.
@@ -100,7 +103,11 @@ export function useApiData<T>({
   // Only triggers a re-render if the response differs from current data.
   // -----------------------------------------------------------------------
   useEffect(() => {
+    if (!ready) return;
+    if (fetchingRef.current) return;
+
     let cancelled = false;
+    fetchingRef.current = true;
     setIsRevalidating(true);
 
     fetcherRef
@@ -125,6 +132,7 @@ export function useApiData<T>({
       })
       .finally(() => {
         if (!cancelled) setIsRevalidating(false);
+        fetchingRef.current = false;
       });
 
     return () => {

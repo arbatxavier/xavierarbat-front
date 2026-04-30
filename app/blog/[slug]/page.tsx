@@ -8,16 +8,24 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useI18n } from "../../i18n/provider";
 import { useApiData } from "../../hooks/useApiData";
+import { fallbackBlogs } from "../../data/defaults/blogs";
+import { fallbackBlogDetailToLocal } from "../../data/mappers";
 import { fetchBlogDetail, type BlogPostDetail } from "@/lib/api";
 
 export default function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
-  const { t, locale } = useI18n();
+  const { t, locale, mounted } = useI18n();
+
+  const initialPost = (() => {
+    const fb = fallbackBlogs.find((b) => b.slug === slug);
+    return fb ? fallbackBlogDetailToLocal(fb, locale) : null;
+  })();
 
   const { data: post, isRevalidating } = useApiData<BlogPostDetail | null>({
     key: `blog-${slug}-${locale}`,
-    initialData: null,
+    initialData: initialPost,
     fetcher: () => fetchBlogDetail(slug, locale),
+    ready: mounted,
   });
 
   const loading = !post && isRevalidating;

@@ -1,11 +1,10 @@
 import type { Project, ImageDisplay, AspectRatio } from "@/app/data/projects";
 import type { ContactChannel, IconName } from "@/app/data/contacts";
+import { API_BASE } from "./config";
 
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.xavierarbat.com/api/v1";
 
 // ---------------------------------------------------------------------------
 // API DTO types (match the OpenAPI spec)
@@ -63,13 +62,13 @@ export interface ApiBlogDetail {
 // Mappers: API → local types
 // ---------------------------------------------------------------------------
 
-const IMAGE_DISPLAY_MAP: Record<string, ImageDisplay> = {
+export const IMAGE_DISPLAY_MAP: Record<string, ImageDisplay> = {
   COVER: "cover",
   CONTAIN: "contain",
   TOP: "top",
 };
 
-const ASPECT_RATIO_MAP: Record<string, AspectRatio> = {
+export const ASPECT_RATIO_MAP: Record<string, AspectRatio> = {
   PORTRAIT: "portrait",
   SQUARE: "square",
   FOURTHIRDS: "fourthirds",
@@ -109,7 +108,7 @@ export function apiProjectDetailToLocal(
 }
 
 /** Map from contact name (API PK) → icon + hover colours */
-const CONTACT_STYLE: Record<
+export const CONTACT_STYLE: Record<
   string,
   {
     iconName: IconName;
@@ -168,7 +167,7 @@ const CONTACT_STYLE: Record<
   },
 };
 
-const DEFAULT_STYLE = {
+export const DEFAULT_STYLE = {
   iconName: "FiMail" as IconName,
   hoverBorder: "hover:border-accent",
   hoverIcon: "group-hover:text-accent",

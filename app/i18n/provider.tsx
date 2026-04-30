@@ -5,6 +5,7 @@ import {
   useContext,
   useState,
   useEffect,
+  useLayoutEffect,
   ReactNode,
 } from "react";
 
@@ -30,6 +31,7 @@ interface I18nContextValue {
   t: typeof es;
   locales: Locale[];
   labels: Record<Locale, string>;
+  mounted: boolean;
 }
 
 const I18nContext = createContext<I18nContextValue | null>(null);
@@ -61,7 +63,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>("en");
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setLocaleState(detectLocale());
     setMounted(true);
   }, []);
@@ -87,6 +89,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
         t: dictionaries[locale],
         locales: LOCALES,
         labels: LOCALE_LABELS,
+        mounted,
       }}
     >
       {children}
