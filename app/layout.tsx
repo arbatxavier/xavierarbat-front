@@ -21,6 +21,10 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+  },
   title: 'Xavier Arbat | Fullstack Developer & Part-time Artist',
   description: 'Explora mi portfolio: obras artísticas, blog de reflexiones y proyectos de programación con frontend y backend públicos en GitHub.',
   openGraph: {
